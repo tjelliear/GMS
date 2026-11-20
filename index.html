@@ -369,6 +369,17 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
 .bw-b{display:grid;grid-template-columns:1.2fr 1.2fr 1.2fr;gap:8px;margin-top:8px}
 .bw-b .bw-t{min-height:78px;justify-content:center;align-items:center;text-align:center;font-size:clamp(14px,2.4vw,26px);letter-spacing:.2em;cursor:default}
 @media(max-width:700px){.bw-g{grid-template-columns:repeat(3,1fr)}}
+
+#maint{position:fixed;inset:0;z-index:1000;background:#040b10;color:#e8f3f4;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+#maint[hidden]{display:none}
+#maint .mt-box{max-width:520px;width:100%}
+#maint h1{font-size:clamp(26px,5vw,38px);margin:0 0 12px}
+#maint p{color:#9fb8bd;line-height:1.5;margin:0 0 22px;white-space:pre-wrap}
+#maint .mt-ey{font:600 11px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:#2dd4bf;margin-bottom:14px}
+#maint button,#maint input{font:inherit;border-radius:4px;border:1px solid #1f4a50;background:#0b1d24;color:#e8f3f4;padding:10px 14px}
+#maint button{cursor:pointer}
+#maint .mt-open{background:none;border:0;color:#6f8d92;text-decoration:underline;font-size:13px;padding:6px}
+#maint .mt-err{color:#ff8a8a;min-height:20px;font-size:13px;margin-top:8px}
 </style>
 </head>
 <body>
@@ -448,6 +459,9 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
     <button class="btn primary" id="cYes">OK</button>
   </div>
 </dialog>
+<div id="maint" hidden role="alert"><div class="mt-box"><div class="mt-ey">GMS</div><h1>Tijdelijk niet beschikbaar</h1><p id="maintMsg"></p>
+<button type="button" class="mt-open" id="maintOpen">Medewerker? Toegang met wachtwoord</button>
+<div id="maintForm" hidden><input type="password" id="maintPw" autocomplete="off" maxlength="72" placeholder="Wachtwoord"> <button type="button" id="maintGo">Doorgaan</button><div class="mt-err" id="maintErr"></div></div></div></div>
 <div class="lms" id="lms" hidden>
   <div class="lms-in">
     <div class="lms-top"><div><div class="lms-eyebrow lms-mono" id="lmsEyebrow">Werkomgeving kiezen</div><h1>Inloggen binnen LMS</h1></div>
@@ -770,6 +784,7 @@ function fileSave(o){
     }catch(e){rej(e);}
   });
 }
+var maintOn=false,maintMsg='',maintBypass=false,gateMk=false;try{maintBypass=sessionStorage.getItem('gms-maint-bypass')==='1';gateMk=sessionStorage.getItem('gms-gate-m')==='1';}catch(e){}
 var gateOk=false;try{gateOk=sessionStorage.getItem('gms-gate')==='1';}catch(e){}  /* centralistenscherm ontgrendeld in deze sessie */
 var PROTECTED_ROLES=['caco','ovd'];  /* rollen die een wachtwoord vragen (in te stellen via beheer.html) */
 var PW_HASH={};  /* wachtwoorden staan niet meer in de code: aanmelden gaat via Supabase Auth */
@@ -2035,14 +2050,14 @@ $('lms').addEventListener('click',function(e){
   if(a==='centralist'||a==='mkov'){
     lmsGate=a;
     if(authMode){lmsStep='login';lmsRender();return;}
-    if(a==='mkov'){$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));return;}
+    if(a==='mkov'){if(!gateMk){lmsStep='gate';lmsRender();return;}$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));return;}
     if(!gateOk){lmsStep='gate';lmsRender();return;}
     lmsStep='menu';lmsRender();return;
   }
   if(a==='gate-ok'&&!authMode){
-    var gk=PW_HASH.centralist;
-    if(!gk){lmsErr='Het wachtwoord voor het centralistenscherm is nog niet ingesteld (of kon niet worden geladen). Vraag een beheerder.';lmsRender();return;}
-    if(lmsPwOk(gk)){gateOk=true;try{sessionStorage.setItem('gms-gate','1');}catch(e){}lmsErr='';lmsStep='menu';lmsRender();}else{lmsErr='Onjuist wachtwoord.';lmsRender();}
+    var gk=PW_HASH[lmsGate==='mkov'?'mkov':'centralist'];
+    if(!gk){lmsErr='Het wachtwoord voor dit scherm is nog niet ingesteld (of kon niet worden geladen). Vraag een beheerder.';lmsRender();return;}
+    if(lmsPwOk(gk)){lmsErr='';if(lmsGate==='mkov'){gateMk=true;try{sessionStorage.setItem('gms-gate-m','1');}catch(e){}$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));}else{gateOk=true;try{sessionStorage.setItem('gms-gate','1');}catch(e){}lmsStep='menu';lmsRender();}}else{lmsErr='Onjuist wachtwoord.';lmsRender();}
     return;}
   if(a==='unit'){lmsStep='unit';lmsRender();return;}
   if(a==='login-ok'){lmsLogin();return;}
@@ -2776,7 +2791,7 @@ async function init(){
       if(ambSel&&!amb[ambSel]){ambSel=null;}
       render();
     },fail);
-    db.collection('instellingen').onSnapshot(function(snap){snap.docs.forEach(function(d){if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});render();},function(){});
+    db.collection('instellingen').onSnapshot(function(snap){var seenM=false;snap.docs.forEach(function(d){if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenM)maintOn=false;renderMaint();render();},function(){});
     CUSTOM_SECS.forEach(function(sec){
       db.collection(sec.id).onSnapshot(function(snap){
         var nd={};
@@ -2790,6 +2805,22 @@ async function init(){
     mode='local';loadLocal();render();
   }
 }
+
+function renderMaint(){
+  var m=$('maint');if(!m)return;
+  var on=maintOn&&!maintBypass;
+  m.hidden=!on;
+  if(on)$('maintMsg').textContent=maintMsg||'Het systeem is tijdelijk niet beschikbaar. Probeer het later opnieuw.';
+}
+function maintTry(){
+  var v=$('maintPw').value,h=PW_HASH.bypass;
+  if(!h){$('maintErr').textContent='Er is geen toegangswachtwoord ingesteld.';return;}
+  if(v&&sha256('roepnummers-zevenaar|'+v)===h){maintBypass=true;try{sessionStorage.setItem('gms-maint-bypass','1');}catch(e){}$('maintPw').value='';$('maintErr').textContent='';renderMaint();}
+  else $('maintErr').textContent='Onjuist wachtwoord.';
+}
+$('maintOpen').addEventListener('click',function(){$('maintForm').hidden=false;$('maintOpen').hidden=true;$('maintPw').focus();});
+$('maintGo').addEventListener('click',maintTry);
+$('maintPw').addEventListener('keydown',function(e){if(e.key==='Enter')maintTry();});
 init();
 })();
 </script>
