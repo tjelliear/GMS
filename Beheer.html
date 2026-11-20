@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMS Beheer</title>
+<style>
+:root{color-scheme:dark;--panel:rgba(7,20,26,.94);--line:rgba(45,212,191,.22);--ink:#e8f3f4;--mute:#9fc4c6;--acc:#2dd4bf;--danger:#ff8a8a;--ok:#43C47A;--warn:#E3B04A}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--ink);background-color:#040b10;background-image:linear-gradient(rgba(45,212,191,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(45,212,191,.045) 1px,transparent 1px);background-size:36px 36px;background-attachment:fixed;min-height:100vh}
+.mono{font-family:ui-monospace,'JetBrains Mono',Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{height:36px;padding:0 14px;border:1px solid rgba(31,184,165,.55);background:rgba(14,60,62,.55);color:#e8fffb;border-radius:2px;font-size:11px;font-weight:700;transition:background .15s,border-color .15s}
+.btn:hover{background:rgba(20,90,90,.8);border-color:var(--acc)}
+.btn.primary{background:var(--acc);color:#031a17;border-color:var(--acc)}
+.btn.danger{background:transparent;color:var(--danger);border-color:rgba(255,138,138,.5)}
+.btn.danger:hover{background:rgba(255,138,138,.12)}
+.btn.sm{height:28px;padding:0 9px;font-size:10px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input,select,textarea{width:100%;background:#07141a;border:1px solid rgba(45,212,191,.35);color:#fff;border-radius:2px;font:inherit;padding:0 10px;height:38px}
+textarea{padding:8px 10px;height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
+label{display:block;font-size:11px;color:#5eead4;margin:12px 0 4px}
+#login{max-width:420px;margin:14vh auto 0;padding:30px;background:var(--panel);border:1px solid var(--line);animation:fade .3s}
+#login h1{margin:6px 0 4px;font-size:28px}
+.err{color:var(--danger);font-weight:600;margin-top:10px}
+#app{display:none;min-height:100vh;grid-template-columns:230px minmax(0,1fr)}
+#app.on{display:grid}
+nav{border-right:1px solid var(--line);background:rgba(4,11,16,.96);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+nav h2{margin:0 6px 14px;font-size:20px}
+nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;background:none;border:0;border-left:3px solid transparent;font-size:12px;color:var(--mute);transition:all .15s}
+nav button:hover{background:rgba(45,212,191,.08);color:#fff}
+nav button.on{border-left-color:var(--acc);background:rgba(45,212,191,.1);color:#fff}
+nav svg{width:16px;height:16px;flex:none}
+nav .foot{margin-top:auto;font-size:11px;color:var(--mute);padding:0 6px}
+main{padding:20px 26px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.top h1{margin:0 auto 0 0;font-size:26px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);background:var(--panel);font-size:11px}
+.dot{width:9px;height:9px;border-radius:50%;background:#7F8AA0}
+.dot.on{background:var(--ok);animation:pulse 1.6s infinite}.dot.off{background:var(--danger)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(67,196,122,.6)}100%{box-shadow:0 0 0 9px rgba(67,196,122,0)}}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#gs{position:relative;width:260px}
+#gres{position:absolute;top:42px;left:0;right:0;z-index:30;background:#07141a;border:1px solid var(--line);max-height:340px;overflow:auto;display:none}
+#gres button{display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:0;border-top:1px solid var(--line);font-size:13px}
+#gres button:hover{background:rgba(45,212,191,.1)}#gres small{color:var(--mute)}
+#view{animation:fade .25s}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.card{padding:14px 16px;border:1px solid var(--line);background:var(--panel);transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--acc)}
+.card b{display:block;font-size:28px;line-height:1.15}.card span{font-size:10px;color:var(--mute)}.card small{display:block;color:var(--mute);margin-top:2px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start}
+.panel{border:1px solid var(--line);background:var(--panel);margin-bottom:14px}
+.panel>h3{margin:0;padding:10px 14px;font-size:16px;background:rgba(45,212,191,.07);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel>h3 small{font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#5eead4}
+.pb{padding:12px 14px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filters input,.filters select{width:200px}
+.tw{overflow:auto;border:1px solid var(--line);background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}
+th{border-top:0;font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:#5eead4;background:rgba(45,212,191,.06)}
+tr:hover td{background:rgba(45,212,191,.04)}
+td.w{white-space:normal;min-width:180px}
+.tag{display:inline-block;min-width:24px;padding:2px 8px;border-radius:2px;font-size:11px;font-weight:700;color:#04141a;text-align:center}
+.tag.t{background:rgba(255,255,255,.12);color:var(--ink)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.warn{padding:8px 12px;margin-bottom:6px;border-left:4px solid var(--warn);background:rgba(227,176,74,.1);font-size:14px}
+.warn.red{border-color:var(--danger);background:rgba(255,138,138,.1)}
+.log{display:grid;grid-template-columns:96px 110px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px}
+.log:first-child{border-top:0}.log span:first-child{color:var(--mute)}.log span:nth-child(2){color:#5eead4;font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.06em}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:120px 1fr 40px;gap:8px;align-items:center;font-size:13px}
+.bar i{display:block;height:12px;background:var(--acc);border-radius:1px;min-width:2px;transition:width .4s}
+.cols{display:flex;gap:6px;align-items:flex-end;height:150px;padding-top:8px}
+.cols div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:10px;color:var(--mute);min-width:0}
+.cols i{display:block;width:100%;background:var(--acc);min-height:2px;transition:height .4s}
+.cols em{font-style:normal;color:var(--ink);font-size:11px}
+.row{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.muted{color:var(--mute)}
+.chk{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}.chk label{display:flex;gap:6px;align-items:center;margin:0;font-size:14px;color:var(--ink)}.chk input{width:auto;height:auto}
+dialog{background:#07141a;color:var(--ink);border:1px solid var(--line);border-radius:2px;padding:24px;width:min(520px,94vw);max-height:92vh;overflow:auto}
+dialog::backdrop{background:rgba(2,8,12,.75);backdrop-filter:blur(6px)}
+dialog h3{margin:0 0 8px;font-size:20px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 18px;background:#e8f3f4;color:#04141a;font-weight:700;border-radius:2px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:50}
+#toast.on{opacity:1}
+@media(max-width:860px){#app.on{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--line)}nav h2{width:100%;margin-bottom:4px}nav button{width:auto;padding:8px 10px}nav .foot{display:none}main{padding:14px}#gs{width:100%}}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="mono" style="font-size:11px;color:var(--acc)">LMS // Beheer</div>
+  <h1>Beheer inloggen</h1>
+  <p style="margin:0;color:var(--mute)">Alleen voor beheerders.</p>
+  <label class="mono">Wachtwoord</label><input id="pw" type="password" autocomplete="current-password" maxlength="64" style="height:44px">
+  <div class="err" id="loginErr" hidden></div>
+  <div class="row"><button class="btn primary mono" id="loginBtn">Inloggen</button></div>
+</div>
+
+<div id="app">
+  <nav id="nav"></nav>
+  <main>
+    <div class="top">
+      <h1 id="title">Dashboard</h1>
+      <div id="gs"><input id="gsq" placeholder="Zoek in het hele beheer" autocomplete="off"><div id="gres"></div></div>
+      <span class="pill mono" id="conn"><i class="dot"></i><span>Verbinden</span></span>
+    </div>
+    <section id="view"></section>
+  </main>
+</div>
+<dialog id="dlg"></dialog>
+<div id="toast" role="status"></div>
+
+<script type="module">
+/* Beheerpagina op dezelfde gegevens als het GMS. Dit is een scherm-inlog en geen serverbeveiliging:
+   iedereen met de (publieke) Supabase-sleutel heeft dezelfde toegang tot de gegevens als deze pagina. */
+const CFG={"url": "https://amytotkfjihycrdmlxdp.supabase.co", "key": "sb_publishable_bztsVfpk9adjtlQsr213rQ_4QMlQxrW"};
+const PW_HASH='12e5a4513c4b3fcaa7907ddbafffc5d787104a06de54c146dcdfcb2cd3eb2e88';
+const REG=[["ON0035","","Korpsondehandelaar","politie"],["ON0036","","Korpsondehandelaar","politie"],["ON0037","","Korpsondehandelaar","politie"],["ON0038","","Korpsondehandelaar","politie"],["ON0039","","Korpsondehandelaar","politie"],["ON0040","","Coördinator Hondegeleider","politie"],["ON0041","","Hondeleider (solo)","politie"],["ON0042","","Hondeleider (solo)","politie"],["ON0043","","Hondeleider (solo)","politie"],["ON0044","","Hondeleider (solo)","politie"],["ON0045","","Hondeleider (solo)","politie"],["ON0046","","Hondeleider (solo)","politie"],["ON0047","","Hondeleider (solo)","politie"],["ON0048","","Hondeleider (solo)","politie"],["ON0049","","Hondeleider (solo)","politie"],["ON0050","","Hondeleider (duo)","politie"],["ON0051","","Hondeleider (duo)","politie"],["ON0052","","Hondeleider (duo)","politie"],["ON0053","","Hondeleider (duo)","politie"],["ON0054","","Hondeleider (duo)","politie"],["ON0055","","Hondeleider (duo)","politie"],["ON0056","","Hondeleider (duo)","politie"],["ON0057","","Hondeleider (duo)","politie"],["ON0058","","Hondeleider (duo)","politie"],["ON0059","","Hondeleider (duo)","politie"],["ON0070","","Team Transport","politie"],["ON0071","","Team Transport","politie"],["ON0072","","Team Transport","politie"],["ON0073","","Team Transport","politie"],["ON0074","","Team Transport","politie"],["ON0075","","Team Transport","politie"],["ON0076","","Team Transport","politie"],["ON0090","","H-OVD-P","politie"],["ON0091","","OVD-P","politie"],["ON0092","","OVD-P","politie"],["ON0093","","OVD-P","politie"],["ON0760","","Arrestantenvervoer","politie"],["ON0761","","Arrestantenvervoer","politie"],["ON0762","","Arrestantenvervoer","politie"],["ON0763","","Arrestantenvervoer","politie"],["ON0764","","Arrestantenvervoer","politie"],["ON0765","","Arrestantenvervoer","politie"],["ON0766","","Arrestantenvervoer","politie"],["ON0767","","Arrestantenvervoer","politie"],["ON0768","","Arrestantenvervoer","politie"],["ON0769","","Arrestantenvervoer","politie"],["ON4901","","Noodhulp (duo)","politie"],["ON4902","","Noodhulp (duo)","politie"],["ON4903","","Noodhulp (duo)","politie"],["ON4904","","Noodhulp (duo)","politie"],["ON4905","","Noodhulp (duo)","politie"],["ON4906","","Noodhulp (duo)","politie"],["ON4907","","Noodhulp (duo)","politie"],["ON4908","","Noodhulp (duo)","politie"],["ON4909","","Noodhulp senior (solo/duo)","politie"],["ON4910","","OPCO","politie"],["ON4911","","Noodhulp (solo)","politie"],["ON4912","","Noodhulp (solo)","politie"],["ON4913","","Noodhulp (solo)","politie"],["ON4914","","Noodhulp (solo)","politie"],["ON4915","","Noodhulp (solo)","politie"],["ON4916","","Onopvallend (duo/solo)","politie"],["ON4917","","Onopvallend (duo/solo)","politie"],["ON4918","","Onopvallend (duo/solo)","politie"],["ON4919","","Onopvallend (duo/solo)","politie"],["ON4920","","Operationeel specialist / expert","politie"],["ON4921","","Motor","politie"],["ON4922","","Motor","politie"],["ON4923","","Motor","politie"],["ON4924","","Motor","politie"],["ON4925","","Motor","politie"],["ON4926","","Motor","politie"],["ON4927","","Bikebus","politie"],["ON4928","","Bikebus","politie"],["ON4929","","Bikebus","politie"],["ON4930","","Bikebus","politie"],["ON4931","","Fiets/voet","politie"],["ON4932","","Fiets/voet","politie"],["ON4933","","Fiets/voet","politie"],["ON4934","","Fiets/voet","politie"],["ON4935","","Studentencoach","politie"],["ON4936","","Student vuurwapen dragend","politie"],["ON4937","","Student vuurwapen dragend","politie"],["ON4938","","Student vuurwapen dragend","politie"],["ON4939","","Student vuurwapen dragend","politie"],["ON4940","","Coördinator Horeca / Evenement","politie"],["ON4945","","Coördinator Horeca / Evenement","politie"],["ON4941","","Horeca / Evenement","politie"],["ON4942","","Horeca / Evenement","politie"],["ON4943","","Horeca / Evenement","politie"],["ON4944","","Horeca / Evenement","politie"],["ON4946","","Horeca / Evenement","politie"],["ON4947","","Horeca / Evenement","politie"],["ON4948","","Horeca / Evenement","politie"],["ON4949","","Horeca / Evenement","politie"],["ON4955","","Geüniformeerd zonder vuurwapen","politie"],["ON4956","","Geüniformeerd zonder vuurwapen","politie"],["ON4957","","Geüniformeerd zonder vuurwapen","politie"],["ON4958","","Geüniformeerd zonder vuurwapen","politie"],["ON4959","","Geüniformeerd zonder vuurwapen","politie"],["ON4960","","Wijkagent","politie"],["ON4961","","Wijkagent","politie"],["ON4962","","Wijkagent","politie"],["ON4963","","Wijkagent","politie"],["ON4964","","Wijkagent","politie"],["ON4965","","Wijkagent","politie"],["ON4966","","Wijkagent","politie"],["ON4967","","Wijkagent","politie"],["ON4968","","Wijkagent","politie"],["ON4969","","Wijkagent","politie"],["ON4970","","Wijkagent","politie"],["ON4971","","Wijkagent","politie"],["ON4972","","Wijkagent","politie"],["ON4973","","Wijkagent","politie"],["ON4974","","Wijkagent","politie"],["ON4975","","Wijkagent","politie"],["ON4976","","Wijkagent","politie"],["ON4977","","Wijkagent","politie"],["ON4978","","Wijkagent","politie"],["ON4979","","Wijkagent","politie"],["ON4981","","Steunpunt","politie"],["ON4982","","Steunpunt","politie"],["ON4983","","Executie taken","politie"],["ON4984","","Executie taken","politie"],["ON4985","","Medewerker verkeersbeleid","politie"],["ON4986","","Vrijwilliger","politie"],["ON4987","","Vrijwilliger","politie"],["ON4988","","Vrijwilliger ondersteunend (ook dierenpolitie)","politie"],["ON4989","","Vrijwilliger ondersteunend (ook dierenpolitie)","politie"],["ON4990","","Handhaving","politie"],["ON4991","","Handhaving","politie"],["ON4992","DierPol","Dierenpolitie","politie"],["ON4998","Reis","Reisnummer","politie"],["ON4999","TC","(Basis)teamchef","politie"],["ON0028","","VIK / Rijksrecherche","politie"],["ON0029","","VIK / Rijksrecherche","politie"],["ON0301","","Forensische Opsporing","politie"],["ON0307","","Forensische Opsporing","politie"],["ON0391","","Forensische Opsporing Verkeer","politie"],["ON0392","","Forensische Opsporing Verkeer","politie"],["ON0393","","Forensische Opsporing Verkeer","politie"],["ON0394","","Forensische Opsporing Verkeer","politie"],["ON0395","","Forensische Opsporing Verkeer","politie"],["ON0396","","Forensische Opsporing Verkeer","politie"],["ON0397","","Forensische Opsporing Verkeer","politie"],["ON0398","","Forensische Opsporing Verkeer","politie"],["ON0399","","Forensische Opsporing Verkeer","politie"],["ON1010","","O.S. Districtsrecherche","politie"],["ON1093","","OVD-R","politie"],["ON1096","","Teamchef Recherche","politie"],["ON4950","","Senior VVC","politie"],["ON4951","","VVC","politie"],["ON4952","","VVC","politie"],["ON4953","","VVC","politie"],["ON4954","","VVC","politie"],["ON0401","","Motor TV","politie"],["ON0402","","Motor TV","politie"],["ON0403","","Motor TV","politie"],["ON0404","","Motor TV","politie"],["ON0405","","Motor TV","politie"],["ON0406","","Motor TV","politie"],["ON0407","","Motor TV","politie"],["ON0408","","Motor TV","politie"],["ON0409","","Motor TV","politie"],["ON0410","","Motor TV","politie"],["ON0411","","Motor TV","politie"],["ON0412","","Motor TV","politie"],["ON0413","","Motor TV","politie"],["ON0414","","Motor TV","politie"],["ON0415","","Motor TV","politie"],["ON0416","","Motor TV","politie"],["ON0417","","Motor TV","politie"],["ON0418","","Motor TV","politie"],["ON0419","","Motor TV","politie"],["ON0420","","Motor TV","politie"],["ON0421","","Motor TV","politie"],["ON0422","","Motor TV","politie"],["ON0423","","Motor TV","politie"],["ON0424","","Motor TV","politie"],["ON0425","","Motor TV","politie"],["ON0426","","Motor TV","politie"],["ON0427","","Motor TV","politie"],["ON0428","","Motor TV","politie"],["ON0429","","Motor TV","politie"],["ON0430","","Motor TV","politie"],["ON0431","","Motor TV","politie"],["ON0432","","Motor TV","politie"],["ON0433","","Motor TV","politie"],["ON0434","","Motor TV","politie"],["ON0435","","Motor TV","politie"],["ON0436","","Motor TV","politie"],["ON0437","","Motor TV","politie"],["ON0438","","Motor TV","politie"],["ON0439","","Motor TV","politie"],["ON0440","","Motor TV","politie"],["ON0441","","Motor TV","politie"],["ON0442","","Motor TV","politie"],["ON0443","","Motor TV","politie"],["ON0444","","Motor TV","politie"],["ON0445","","Motor TV","politie"],["ON0446","","Motor TV","politie"],["ON0447","","Motor TV","politie"],["ON0448","","Motor TV","politie"],["ON0449","","Motor TV","politie"],["ON0450","","Motor TV","politie"],["ON0451","","Motor TV","politie"],["ON0452","","Motor TV","politie"],["ON0453","","Motor TV","politie"],["ON0454","","Motor TV","politie"],["ON0455","","Motor TV","politie"],["ON0456","","Motor TV","politie"],["ON0457","","Motor TV","politie"],["ON0458","","Motor TV","politie"],["ON0459","","Motor TV","politie"],["ON0471","","TVMot-X","politie"],["ON0472","","TVMot-X","politie"],["ON0501","","SIV TV","politie"],["ON0502","","SIV TV","politie"],["ON0503","","SIV TV","politie"],["ON0504","","SIV TV","politie"],["ON0505","","SIV TV","politie"],["ON0506","","SIV TV","politie"],["ON0507","","SIV TV","politie"],["ON0508","","SIV TV","politie"],["ON0509","","SIV TV","politie"],["ON0510","","OPCO TV (SIV)","politie"],["ON0511","","TVSur-X","politie"],["ON0512","","TVSur-X","politie"],["ON0513","","TVSur-X","politie"],["ON0514","","TVSur-X","politie"],["ON0515","","TVSur-X","politie"],["ON0516","","TVSur-X","politie"],["ON0517","","Video Surveillance","politie"],["ON0518","","Video Surveillance","politie"],["ON0519","","Video Surveillance","politie"],["LE8011","","Heli Eurocopter","politie"],["LE8016","","Heli Eurocopter","politie"],["LE3201","","TV-SIV (DINFRA)","politie"],["LE3202","","TV-SIV (DINFRA)","politie"],["LE3203","","TV-SIV (DINFRA)","politie"],["LE3204","","TV-SIV (DINFRA)","politie"],["LE3205","","TV-SIV (DINFRA)","politie"],["LE3216","","TV-SurvX","politie"],["LE3217","","TV-SurvX","politie"],["LE3218","","TV-SurvX","politie"],["LE3219","","TV-SurvX","politie"],["LE3241","","(Project/Actie) Overige inzetten","politie"],["LE3242","","(Project/Actie) Overige inzetten","politie"],["LE3243","","(Project/Actie) Overige inzetten","politie"],["LE3244","","(Project/Actie) Overige inzetten","politie"],["LE3245","","(Project/Actie) Overige inzetten","politie"],["LE3246","","(Project/Actie) Overige inzetten","politie"],["LE3247","","(Project/Actie) Overige inzetten","politie"],["LE3248","","(Project/Actie) Overige inzetten","politie"],["LE3249","","(Project/Actie) Overige inzetten","politie"],["LE8401","","Grote vaartuigen","politie"],["LE8402","","Grote vaartuigen","politie"],["LE8403","","Grote vaartuigen","politie"],["LE8404","","Grote vaartuigen","politie"],["LE8405","","Grote vaartuigen","politie"],["LE
