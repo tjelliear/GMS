@@ -404,6 +404,7 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
 .bg-send{margin-top:14px;width:100%}
 .bg-mine{padding:8px 0;border-top:1px solid rgba(120,160,170,.25)}.bg-mine:first-of-type{border-top:0}
 .bg-mine span[data-bgs]{font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace}
+.lms-pick:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -887,7 +888,7 @@ function bgSend(){
     var m=bgMine();m.push(id);try{localStorage.setItem('gms-bgmine',JSON.stringify(m.slice(-10)));localStorage.setItem('gms-bglast',String(Date.now()));}catch(e){}
     bgDraft={kanaal:'',soort:'',loc:'',tekst:'',naam:d.naam,tel:d.tel};
     bgMsg={t:'ok',x:'Je aanvraag is verstuurd. Referentie: '+rec.nr+'.'};render();
-  }).catch(function(){err('Versturen is niet gelukt. Probeer het later opnieuw.');});
+  }).catch(function(e){var em=(e&&(e.message||e.details))||String(e||'');console.error('Burgeraanvraag versturen mislukt:',em);err('Versturen is niet gelukt. Probeer het later opnieuw.'+(/row-level security|policy|permission/i.test(em)?' De database staat dit nog niet toe: vraag een beheerder om de rechten in te stellen.':''));});
 }
 function bgMakeMel(id){
   var r=bgq[id];if(!r)return;
@@ -917,6 +918,29 @@ function bgTick(){
     el.textContent=bgFmt(Math.max(0,Math.floor((now-t)/1000)));
     var row=el.closest('.bgr');
     if(row){var late=+row.getAttribute('data-late');row.classList.toggle('late',late>0&&now-t>late);}
+  }
+}
+/* ---------- Onderdelen vergrendelen / wachtwoord uit (instelbaar in beheer) ---------- */
+var PART={};
+var PART_KEYS=['centralist','caco','ovd','mkov','burger','unit'];
+function partOff(k){return !!(PART[k]&&PART[k].uit);}
+function pwNeeded(k){return !(PART[k]&&PART[k].zonderww);}
+function roleParts(r){
+  if(!r)return [];
+  if(r.id==='unit'||r.id==='burger'||r.id==='mkov')return [r.id];
+  var l=['centralist'];if(r.id==='caco'||r.id==='ovd')l.push(r.id);return l;
+}
+function enforceParts(){
+  if(role&&roleParts(role).some(partOff)){
+    role=null;
+    try{render();}catch(e){}
+    openRoleDlg();toast('Dit onderdeel is tijdelijk niet beschikbaar.');return;
+  }
+  var l=$('lms');
+  if(l&&!l.hidden){
+    var cur=lmsStep==='unit'?'unit':lmsStep==='pw'?lmsPick:lmsGate;
+    if(lmsStep!=='home'&&cur&&partOff(cur))lmsStep='home';
+    lmsRender();
   }
 }
 var maintOn=false,maintMsg='',maintBypass=false,gateMk=false,gateBg=false;try{maintBypass=sessionStorage.getItem('gms-maint-bypass')==='1';gateMk=sessionStorage.getItem('gms-gate-m')==='1';gateBg=sessionStorage.getItem('gms-gate-b')==='1';}catch(e){}
@@ -2111,10 +2135,10 @@ function lmsRender(){
   var h='',eb='Werkomgeving kiezen';
   if(lmsStep==='home'){
     h='<div class="lms-grid">'+
-      lmsCard('01','centralist','Meldkamer','Centralist','Open de centralistenwerkplek voor het aannemen van meldingen, het alarmeren van eenheden en de operationele co&ouml;rdinatie.','Inloggen als centralist',true)+
-      lmsCard('02','unit','GMS / Eenhedenportaal','Eenheid','Meld je aan met het roepnummer van je eenheid om je status door te geven en meldingen en inzetinformatie te bekijken.','Inloggen als eenheid')+
-      lmsCard('03','burger','Burger meld systeem','Burger','Bel de meldkamer via een hulpnummer of stuur een algemene spraakaanvraag.',authMode?'Niet beschikbaar':'Inloggen als burger',!authMode,authMode,authMode?'Niet beschikbaar met accounts':'')+
-      lmsCard('04','mkov','MK / Live inzage','MK Overzicht','Bekijk live de actieve meldkamers, ingemelde eenheden, openstaande meldingen en het kladblok, zonder zelf een meldkamer te openen.','Open MK overzicht',true)+'</div>';
+      lmsCard('01','centralist','Meldkamer','Centralist','Open de centralistenwerkplek voor het aannemen van meldingen, het alarmeren van eenheden en de operationele co&ouml;rdinatie.',partOff('centralist')?'Niet beschikbaar':'Inloggen als centralist',pwNeeded('centralist'),partOff('centralist'),partOff('centralist')?'Tijdelijk niet beschikbaar':'')+
+      lmsCard('02','unit','GMS / Eenhedenportaal','Eenheid','Meld je aan met het roepnummer van je eenheid om je status door te geven en meldingen en inzetinformatie te bekijken.',partOff('unit')?'Niet beschikbaar':'Inloggen als eenheid',false,partOff('unit'),partOff('unit')?'Tijdelijk niet beschikbaar':'')+
+      lmsCard('03','burger','Burger meld systeem','Burger','Bel de meldkamer via een hulpnummer of stuur een algemene spraakaanvraag.',(authMode||partOff('burger'))?'Niet beschikbaar':'Inloggen als burger',!authMode&&pwNeeded('burger'),authMode||partOff('burger'),authMode?'Niet beschikbaar met accounts':(partOff('burger')?'Tijdelijk niet beschikbaar':''))+
+      lmsCard('04','mkov','MK / Live inzage','MK Overzicht','Bekijk live de actieve meldkamers, ingemelde eenheden, openstaande meldingen en het kladblok, zonder zelf een meldkamer te openen.',partOff('mkov')?'Niet beschikbaar':'Open MK overzicht',pwNeeded('mkov'),partOff('mkov'),partOff('mkov')?'Tijdelijk niet beschikbaar':'')+'</div>';
   }else if(lmsStep==='login'){
     eb=lmsGate==='mkov'?'MK / Live inzage':'Meldkamer';
     h='<div class="lms-panel"><button class="lms-back lms-mono" data-lms="back">&larr; Terug</button><div class="lms-eyebrow lms-mono">'+eb+LMS_LOCK+'</div><h2>Inloggen</h2><p>Log in met je persoonlijke account.</p>'+
@@ -2135,8 +2159,8 @@ function lmsRender(){
     h='<div class="lms-panel"><button class="lms-back lms-mono" data-lms="back">&larr; Terug</button><div class="lms-eyebrow lms-mono">'+eb+LMS_LOCK+'</div><h2>Vergrendeld</h2><p>Vul het wachtwoord in om verder te gaan.</p><label class="lms-mono">Wachtwoord</label><input id="lmsPw" type="password" autocomplete="off" maxlength="64">'+(lmsErr?'<div class="lms-err" role="alert">'+lmsErr+'</div>':'')+'<button class="lms-btn lms-mono" type="button" data-lms="gate-ok"><span>Ontgrendelen</span>'+LMS_GO+'</button></div>';
   }else if(lmsStep==='menu'){
     eb='Meldkamer';
-    h='<div class="lms-panel wide"><button class="lms-back lms-mono" data-lms="back">&larr; Terug</button><div class="lms-eyebrow lms-mono">Meldkamer</div><h2>Kies je werkplek</h2><p>Voor CaCo en OvD-OC is nog een eigen wachtwoord nodig.</p><label class="lms-mono">Je naam (optioneel)</label><input id="lmsName" type="text" autocomplete="off" maxlength="40" value="'+esc(lmsNameVal)+'"><div class="lms-menu">'+
-      ['oc','mka','mkb','alle','caco','ovd'].map(function(id){var r=roleById(id);return '<button class="lms-pick" type="button" data-lms="pick:'+id+'"><b>'+esc(r.name)+((id==='caco'||id==='ovd')?LMS_LOCK:'')+'</b><small>'+esc(r.desc)+'</small></button>';}).join('')+'</div></div>';
+    h='<div class="lms-panel wide"><button class="lms-back lms-mono" data-lms="back">&larr; Terug</button><div class="lms-eyebrow lms-mono">Meldkamer</div><h2>Kies je werkplek</h2>'+((pwNeeded('caco')||pwNeeded('ovd'))?'<p>Voor CaCo en OvD-OC is nog een eigen wachtwoord nodig.</p>':'')+'<label class="lms-mono">Je naam (optioneel)</label><input id="lmsName" type="text" autocomplete="off" maxlength="40" value="'+esc(lmsNameVal)+'"><div class="lms-menu">'+
+      ['oc','mka','mkb','alle','caco','ovd'].map(function(id){var r=roleById(id);return '<button class="lms-pick" type="button" data-lms="pick:'+id+'"'+(partOff(id)?' disabled':'')+'><b>'+esc(r.name)+((id==='caco'||id==='ovd')&&pwNeeded(id)?LMS_LOCK:'')+'</b><small>'+(partOff(id)?'Tijdelijk niet beschikbaar':esc(r.desc))+'</small></button>';}).join('')+'</div></div>';
   }else if(lmsStep==='pw'){
     var rr=roleById(lmsPick);eb=rr.name;
     h='<div class="lms-panel"><button class="lms-back lms-mono" data-lms="back">&larr; Terug</button><div class="lms-eyebrow lms-mono">'+esc(rr.name)+LMS_LOCK+'</div><h2>Wachtwoord</h2><p>Vul het wachtwoord voor '+esc(rr.name)+' in.</p><label class="lms-mono">Wachtwoord</label><input id="lmsPw" type="password" autocomplete="off" maxlength="64">'+(lmsErr?'<div class="lms-err" role="alert">'+lmsErr+'</div>':'')+'<button class="lms-btn lms-mono" type="button" data-lms="pw-ok"><span>Inloggen</span>'+LMS_GO+'</button></div>';
@@ -2184,11 +2208,12 @@ $('lms').addEventListener('click',function(e){
   if(a==='cancel'){lmsClose();return;}
   if(a==='logout'){authLogout();return;}
   if(a==='back'){lmsStep='home';lmsRender();return;}
+  if((a==='centralist'||a==='mkov'||a==='unit'||a==='burger')&&partOff(a))return;
   if(a==='centralist'||a==='mkov'){
     lmsGate=a;
     if(authMode){lmsStep='login';lmsRender();return;}
-    if(a==='mkov'){if(!gateMk){lmsStep='gate';lmsRender();return;}$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));return;}
-    if(!gateOk){lmsStep='gate';lmsRender();return;}
+    if(a==='mkov'){if(!gateMk&&pwNeeded('mkov')){lmsStep='gate';lmsRender();return;}$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));return;}
+    if(!gateOk&&pwNeeded('centralist')){lmsStep='gate';lmsRender();return;}
     lmsStep='menu';lmsRender();return;
   }
   if(a==='gate-ok'&&!authMode){
@@ -2196,13 +2221,13 @@ $('lms').addEventListener('click',function(e){
     if(!gk){lmsErr='Het wachtwoord voor dit scherm is nog niet ingesteld (of kon niet worden geladen). Vraag een beheerder.';lmsRender();return;}
     if(lmsPwOk(gk)){lmsErr='';if(lmsGate==='burger'){gateBg=true;try{sessionStorage.setItem('gms-gate-b','1');}catch(e){}$('roleName').value='';canWrite=true;applyRole(roleById('burger'));}else if(lmsGate==='mkov'){gateMk=true;try{sessionStorage.setItem('gms-gate-m','1');}catch(e){}$('roleName').value='';canWrite=false;applyRole(roleById('mkov'));}else{gateOk=true;try{sessionStorage.setItem('gms-gate','1');}catch(e){}lmsStep='menu';lmsRender();}}else{lmsErr='Onjuist wachtwoord.';lmsRender();}
     return;}
-  if(a==='burger'&&!authMode){lmsGate='burger';if(!gateBg){lmsStep='gate';lmsRender();return;}$('roleName').value='';canWrite=true;applyRole(roleById('burger'));return;}
+  if(a==='burger'&&!authMode){lmsGate='burger';if(!gateBg&&pwNeeded('burger')){lmsStep='gate';lmsRender();return;}$('roleName').value='';canWrite=true;applyRole(roleById('burger'));return;}
   if(a==='unit'){lmsStep='unit';lmsRender();return;}
   if(a==='login-ok'){lmsLogin();return;}
   if(a==='chpw-ok'){lmsChpw();return;}
   if(a==='unit-ok'){lmsUnit();return;}
-  if(a.indexOf('pick:')===0&&!authMode){lmsPick=a.slice(5);$('roleName').value=lmsNameVal;canWrite=true;
-    if(PROTECTED_ROLES.indexOf(lmsPick)>=0&&!(role&&role.id===lmsPick)){lmsStep='pw';lmsRender();return;}
+  if(a.indexOf('pick:')===0&&!authMode){lmsPick=a.slice(5);if(partOff(lmsPick))return;$('roleName').value=lmsNameVal;canWrite=true;
+    if(PROTECTED_ROLES.indexOf(lmsPick)>=0&&pwNeeded(lmsPick)&&!(role&&role.id===lmsPick)){lmsStep='pw';lmsRender();return;}
     applyRole(roleById(lmsPick));return;}
   if(a==='pw-ok'&&!authMode){
     var hk=PW_HASH[lmsPick];
@@ -2939,7 +2964,7 @@ async function init(){
       if(ambSel&&!amb[ambSel]){ambSel=null;}
       render();
     },fail);
-    db.collection('instellingen').onSnapshot(function(snap){var seenM=false;snap.docs.forEach(function(d){if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenM)maintOn=false;renderMaint();render();},function(){});
+    db.collection('instellingen').onSnapshot(function(snap){var seenM=false,seenP=false;snap.docs.forEach(function(d){if(d.id==='onderdelen'){seenP=true;var pd=d.data()||{};PART={};PART_KEYS.forEach(function(k){var x=pd[k]||{};PART[k]={uit:!!x.uit,zonderww:!!x.zonderww};});}if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenM)maintOn=false;if(!seenP)PART={};renderMaint();render();enforceParts();},function(){});
     CUSTOM_SECS.forEach(function(sec){
       db.collection(sec.id).onSnapshot(function(snap){
         var nd={};
