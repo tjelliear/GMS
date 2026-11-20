@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handleiding voor centralisten</title>
+<style>
+:root{--bg:#f4f8f8;--card:#fff;--ink:#0b1f26;--mute:#566a72;--line:#d3e0e2;--teal:#0e9f8e;--dark:#0b1f26;--dark2:#12353f;--red:#dc2626;--orange:#e8890c;--blue:#2563eb;--green:#16a34a;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#071217;--card:#0e232b;--ink:#e8f3f4;--mute:#9db5ba;--line:#1d4048;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--dark);color:#fff;padding:48px 20px 40px}
+header div,main,nav div{max-width:960px;margin:0 auto}
+header small{letter-spacing:.14em;color:#2dd4bf;font:600 12px ui-monospace,Menlo,Consolas,monospace}
+h1{margin:8px 0 10px;font-size:clamp(30px,6vw,46px);line-height:1.15}
+header p{margin:0;color:#b8d0d4;max-width:620px}
+nav{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+nav div{display:flex;gap:4px;overflow-x:auto;padding:8px 12px}
+nav a{white-space:nowrap;padding:6px 12px;border-radius:99px;color:var(--ink);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--line)}
+main{padding:8px 20px 60px}
+section{margin-top:44px;scroll-margin-top:64px}
+h2{font-size:28px;margin:0 0 6px;display:flex;gap:12px;align-items:center}
+h2 b{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--teal);color:#fff;font-size:17px;flex:none}
+h3{margin:22px 0 6px;font-size:18px}
+p{margin:8px 0}.lead{color:var(--mute);margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid .card{margin:0}
+.tip{border-radius:10px;padding:12px 16px;margin:14px 0;background:rgba(14,159,142,.12)}
+.warn{background:rgba(232,137,12,.15)}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:14px 0}
+ol.steps li{counter-increment:s;position:relative;padding:4px 0 14px 48px}
+ol.steps li:before{content:counter(s);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;background:var(--dark2);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+ol.steps li b{display:block}
+.st{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.st div{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.n{flex:none;width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:#fff;font-weight:700}
+.st small{color:var(--mute);display:block;line-height:1.3}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.flow span{background:var(--dark2);color:#fff;border-radius:8px;padding:8px 14px;font-weight:600;font-size:15px}
+.flow i{font-style:normal;color:var(--mute)}
+.mock{background:var(--dark);color:#e8f3f4;border-radius:12px;padding:16px;margin:16px 0;font-size:14px}
+.mock h4{margin:0 0 10px;font-size:15px}
+.mock .cap{color:#8fb0b6;font-size:12px;margin-top:10px}
+.row{display:flex;gap:10px;align-items:center;background:var(--dark2);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.row .t{margin-left:auto;font:700 15px ui-monospace,Menlo,Consolas,monospace}
+.row small{display:block;color:#9fc0c6}
+.pb{flex:none;border-radius:6px;color:#fff;font-weight:700;padding:6px 10px;min-width:42px;text-align:center}
+.fields{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.fields div{background:var(--dark2);border-radius:6px;padding:8px 10px}
+.fields small{display:block;color:#8fb0b6;font-size:11px}
+.btn{display:inline-block;background:var(--teal);color:#fff;border-radius:6px;padding:6px 14px;font-weight:600;font-size:13px;margin:6px 6px 0 0}
+.btn.g{background:#2b4f59}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--dark2);color:#fff;font-size:13px}
+footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
+@keyframes bl{50%{background:#5b1d1d}}.late{animation:bl 1.4s infinite}
+</style>
+</head>
+<body>
+<header><div><small>GMS MELDKAMER</small><h1>Handleiding voor centralisten</h1><p>Zo werkt de meldkamer: van inloggen en het bord met eenheden tot de uitgifte van een ambulance, burgeraanvragen en calamiteiten.</p></div></header>
+<nav><div><a href="#start">Inloggen</a><a href="#bord">Het bord</a><a href="#uitgifte">Uitgifte ambulance</a><a href="#melding">Overige meldingen</a><a href="#burger">Burgeraanvragen</a><a href="#extra">Berichten en calamiteiten</a><a href="#leiding">CaCo en OvD-OC</a><a href="#tips">Tips</a></div></nav>
+<main>
+
+<section id="start"><h2><b>1</b>Inloggen en werkplek kiezen</h2>
+<p class="lead">Kies op het startscherm <strong>Centralist</strong>, vul het wachtwoord in dat je van de beheerder kreeg en kies je werkplek. Een eigen naam invullen is optioneel, maar je naam staat dan bij acties zoals het oppakken van een aanvraag.</p>
+<div class="grid">
+<div class="card"><h3>OC/OPS</h3><p>Operationeel Centrum: je ziet <strong>politie en KMar</strong>.</p></div>
+<div class="card"><h3>MKA</h3><p>Meldkamer Ambulance: je ziet de <strong>ambulance</strong> en werkt met het incidentenbord.</p></div>
+<div class="card"><h3>AC/MKB</h3><p>Brandweer: je ziet de <strong>brandweereenheden</strong>.</p></div>
+<div class="card"><h3>Alle diensten</h3><p>Je ziet <strong>alle vier de diensten</strong> naast elkaar.</p></div>
+<div class="card"><h3>CaCo en OvD-OC</h3><p>Leidinggevende rollen met een <strong>eigen wachtwoord</strong> en extra mogelijkheden (zie hoofdstuk 7).</p></div>
+</div>
+<div class="tip warn">Staat er een scherm “Tijdelijk niet beschikbaar”? Dan is het systeem door de beheerder offline gehaald. Vraag de beheerder om het omzeilwachtwoord of wacht tot het weer online is.</div>
+</section>
+
+<section id="bord"><h2><b>2</b>Het bord: eenheden en statussen</h2>
+<p class="lead">Elke eenheid heeft een roepnummer en een status. Eenheden geven hun status zelf door op hun eigen scherm. Jij ziet het direct op het bord, ook als een ander de wijziging doet.</p>
+<div class="st">
+<div><span class="n" style="background:#16a34a">1</span><span>Inzetbaar<small>Beschikbaar voor inzet</small></span></div>
+<div><span class="n" style="background:#3b82f6">2</span><span>Aanrijdend<small>Onderweg naar de melding</small></span></div>
+<div><span class="n" style="background:#8b5cf6">3</span><span>Ter plaatse<small>Op locatie</small></span></div>
+<div><span class="n" style="background:#d99a1c">4</span><span>Vertraagd inzetbaar<small>Bijna weer beschikbaar</small></span></div>
+<div><span class="n" style="background:#7b8794">5</span><span>Uitmelden<small>Niet beschikbaar</small></span></div>
+<div><span class="n" style="background:#14b8a6">6</span><span>Spraak<small>Eenheid wil de meldkamer spreken</small></span></div>
+<div><span class="n" style="background:#f97316">7</span><span>Spraak-aanvraag urgent<small>Spreken, met voorrang</small></span></div>
+<div><span class="n" style="background:#ec4899">8</span><span>Melding eigen initiatief<small>Eenheid meldt zelf iets</small></span></div>
+<div><span class="n" style="background:#818cf8">9</span><span>Informatie<small>Informatief bericht</small></span></div>
+<div><span class="n" style="background:#ef4444">0</span><span>Noodknop<small>Direct hulp nodig, hoogste prioriteit</small></span></div>
+</div>
+<h3>Status wijzigen en opmerkingen</h3>
+<p>Klik op een roepnummer om het paneel te openen. Met de <strong>cijfertoetsen 0 tot en met 9</strong> kies je snel een status. Je kunt een opmerking bij het nummer zetten, het nummer leegmaken of het roepnummer verwijderen, en met <em>Opslaan en volgende</em> ga je door naar de volgende eenheid.</p>
+<h3>Spraakaanvragen van eenheden</h3>
+<p>In de zijbalk staat de lijst <strong>Spraakaanvragen</strong>. De volgorde is vast: eerst de noodknop (0), dan urgent (7), dan spraak (6) en tot slot melding eigen initiatief (8).</p>
+<div class="tip">Brandweereenheden hebben een eigen paneel met tegels. <strong>Ingerukt</strong>, <strong>Beschikbaar</strong> en <strong>Op kazerne</strong> tellen alle drie als status 1. Op het bord zie je bij zo’n eenheid erbij welke tegel gekozen is, bijvoorbeeld “Inzetbaar · Op kazerne”.</div>
+</section>
+
+<section id="uitgifte"><h2><b>3</b>Uitgifte van een ambulance</h2>
+<p class="lead">Op het ambulancebord werk je met <strong>incidenten</strong>. Een incident krijgt een melding, een eenheid en een verloop. Zo loop je er stap voor stap doorheen.</p>
+<ol class="steps">
+<li><b>Nieuwe melding starten</b>Kies <em>Nieuwe melding</em>. Je krijgt een lege incidentkaart.</li>
+<li><b>Gegevens invullen of een parserterm kiezen</b>Vul de MC (meldingsclassificatie), de urgentie, de plaats, straat, postcode, bijzonderheden en bestemming in. Met de <em>Parsertermen</em> (snelle keuze) vul je de kaart in één klik, bijvoorbeeld voor een hulpvraag ambulancezorg.</li>
+<li><b>Opslaan</b>Klik op opslaan. De melding krijgt een nummer en komt onder <em>Wachtend op uitgifte</em> te staan, tot er een eenheid aan gekoppeld is.</li>
+<li><b>Het inzetvoorstel bekijken</b>Zodra je een plaats hebt ingevuld, doet het systeem een voorstel. Staat er in die plaats een beschikbare ambulance (status 1 of 4), dan wordt die voorgesteld. Anders krijg je de dichtstbijzijnde beschikbare, met de afstand in kilometers.</li>
+<li><b>Eenheid koppelen</b>Typ het roepnummer, bijvoorbeeld 07-113, en klik <em>Koppelen</em>. De eenheid gaat automatisch naar <strong>status 2 (Aanrijdend)</strong>, tenzij je zelf een andere status kiest.</li>
+<li><b>Tijden vastleggen</b>Per eenheid stempel je de momenten <em>vervoer</em> en <em>bestemming</em>. Elke stap komt in de historie.</li>
+<li><b>Afronden</b>Klik <em>Sluit incident</em>. Het incident gaat naar <em>Afgerond</em>. De gekoppelde eenheden <strong>behouden hun status</strong>, dus zet ze zelf (of laat ze) terug op status 1 als ze weer beschikbaar zijn.</li>
+</ol>
+<div class="mock"><h4>Zo ziet de incidentkaart eruit (voorbeeld)</h4>
+<div class="fields"><div><small>MC</small>Hulpvraag / Ambulancezorg</div><div><small>URGENTIE</small>A1</div><div><small>PLAATS</small>Zevenaar</div><div><small>STRAAT</small>Hoofdstraat 1</div><div><small>BIJZONDERHEDEN</small>Man, 60 jaar, benauwd</div></div>
+<p style="margin:12px 0 4px;color:#8fb0b6;font-size:12px">INZETVOORSTEL</p>
+<div class="row"><span class="pb" style="background:#16a34a">1</span><span>07-113<small>Zevenaar · Inzetbaar</small></span><span class="pb" style="background:#0e9f8e;margin-left:auto">Voorstel</span></div>
+<span class="btn">Opslaan</span><span class="btn">Koppelen</span><span class="btn g">Sluit incident</span>
+<div class="cap">De wachtende en lopende incidenten staan in lijsten naast de kaart. Een afgerond incident kun je heropenen of verwijderen.</div></div>
+<div class="tip">Staat er geen beschikbare ambulance in het voorstel? Dan zegt het systeem dat. Meld een ambulance in (status 1) of koppel zelf een eenheid.</div>
+<p>Je kunt onderaan de kaart ook een <strong>intern kladblok</strong> gebruiken of een commando typen, bijvoorbeeld <code>-GH</code>, en op <em>Toevoegen</em> klikken. Dat komt in de historie.</p>
+</section>
+
+<section id="melding"><h2><b>4</b>Overige meldingen (politie, KMar, brandweer)</h2>
+<p class="lead">Voor alles buiten de ambulance gebruik je de tab <strong>Meldingen</strong>.</p>
+<ol class="steps">
+<li><b>Melding toevoegen</b>Typ een titel en voeg de melding toe, of maak er een aan bij een roepnummer.</li>
+<li><b>Eenheden koppelen</b>Koppel roepnummers aan de melding. Ze gaan automatisch naar status 2 (Aanrijdend), tenzij je zelf een andere status kiest.</li>
+<li><b>Notities bijhouden</b>Notities bij de melding zijn gedeeld met alle eenheden die eraan gekoppeld zijn.</li>
+<li><b>Afronden</b>Het systeem laat zien hoeveel eenheden eraan hangen en dat die <strong>automatisch naar status 1</strong> gaan. Eenheden op status 0 (noodknop) en 5 (uitmelden) houden hun status. De notities blijven bewaard onder <em>Afgerond</em>.</li>
+</ol>
+<div class="flow"><span>Toevoegen</span><i>›</i><span>Koppelen</span><i>›</i><span>Notities</span><i>›</i><span>Afronden</span></div>
+<p>Een afgeronde melding kun je <em>heropenen</em> of <em>verwijderen</em>. Verwijderen is definitief.</p>
+</section>
+
+<section id="burger"><h2><b>5</b>Burgeraanvragen</h2>
+<p class="lead">Burgers sturen een spraakaanvraag naar de meldkamer. In de zijbalk staat de lijst <strong>Burgeraanvragen</strong>, altijd op prioriteit.</p>
+<table><tr><th>Prioriteit</th><th>Kanaal</th><th>Rood knipperen na</th></tr>
+<tr><td><span class="pb" style="background:#dc2626">P1</span></td><td>112, spoed</td><td>2 minuten</td></tr>
+<tr><td><span class="pb" style="background:#e8890c">P2</span></td><td>0900-8844, politie geen spoed</td><td>10 minuten</td></tr>
+<tr><td><span class="pb" style="background:#2563eb">P3</span></td><td>Algemene spraakaanvraag</td><td>20 minuten</td></tr></table>
+<div class="mock"><h4>Burgeraanvragen (voorbeeld)</h4>
+<div class="row late"><span class="pb" style="background:#dc2626">P1</span><span>112 · Brandweer<small>Hoofdstraat 1, rook uit het dak</small></span><span class="t">02:35</span></div>
+<div class="row"><span class="pb" style="background:#e8890c">P2</span><span>0900-8844 · Politie<small>Markt 2, geluidsoverlast</small></span><span class="t">05:10</span></div>
+<div class="row"><span class="pb" style="background:#2563eb">P3</span><span>Algemeen<small>Vraag aan de meldkamer</small></span><span class="t">12:36</span></div>
+<span class="btn">Oppakken</span><span class="btn">Melding maken</span><span class="btn g">Afronden</span>
+<div class="cap">De tijd rechts is de wachttijd en loopt vanzelf door.</div></div>
+<h3>Wat doe je met een aanvraag?</h3>
+<div class="grid">
+<div class="card"><h3>Oppakken</h3><p>Je neemt de aanvraag in behandeling. Je naam komt erbij, en de burger ziet dat een centralist de aanvraag oppakt.</p></div>
+<div class="card"><h3>Melding maken</h3><p>Het systeem maakt een melding met alle gegevens, gericht aan de juiste dienst. De aanvraag is daarmee afgehandeld.</p></div>
+<div class="card"><h3>Afronden</h3><p>Je sluit de aanvraag af zonder melding, bijvoorbeeld als een vraag mondeling is beantwoord.</p></div>
+</div>
+<div class="tip">Bij een nieuwe aanvraag hoor je een geluid (bij 112 het urgente geluid) en zie je een bericht in beeld. Zo mis je er geen.</div>
+</section>
+
+<section id="extra"><h2><b>6</b>Berichten, kladblok en logboek</h2>
+<div class="grid">
+<div class="card"><h3>Berichten</h3><p>In de tab <em>Berichten</em> verstuur je een bericht naar de andere meldkamers. Je ziet de berichten die zijn verstuurd.</p></div>
+<div class="card"><h3>Intern kladblok</h3><p>Je kunt een intern kladblok gebruiken voor eigen aantekeningen die geen melding zijn.</p></div>
+<div class="card"><h3>Logboek</h3><p>Belangrijke gebeurtenissen en wijzigingen worden automatisch vastgelegd. Zo kan achteraf iedereen nalezen wat er is gebeurd.</p></div>
+</div>
+</section>
+
+<section id="leiding"><h2><b>7</b>CaCo en OvD-OC</h2>
+<p class="lead">Met de rollen CaCo en OvD-OC heb je extra mogelijkheden voor coördinatie.</p>
+<ul>
+<li><strong>Calamiteit uitroepen</strong> met een omschrijving en een GRIP-niveau (1 tot en met 4). De calamiteit komt zichtbaar bij de betrokken diensten.</li>
+<li><strong>Iedereen uitloggen</strong>, bijvoorbeeld bij het afsluiten van een oefening of bij een wisseling.</li>
+<li><strong>Overzicht per dienst</strong>: welke eenheden zijn ingemeld, welke open meldingen en incidenten er zijn.</li>
+<li><strong>Incidenten overnemen</strong> van een andere centralist.</li>
+<li><strong>Testscenario’s</strong> om mee te oefenen, zoals een verkeersongeval op de A12 of een grote brand (GRIP 2).</li>
+</ul>
+</section>
+
+<section id="tips"><h2><b>8</b>Handige tips</h2>
+<div class="grid">
+<div class="card"><h3>Sneller werken</h3><p>Gebruik de cijfertoetsen voor statussen en de parsertermen voor ambulance-meldingen.</p></div>
+<div class="card"><h3>Geluid</h3><p>Nieuwe meldingen, noodknoppen en burgeraanvragen geven een geluid. Laat het geluid van je browser aan staan.</p></div>
+<div class="card"><h3>Alleen kijken</h3><p>Met <em>MK Overzicht</em> kun je meekijken zonder iets te wijzigen. Handig voor leidinggevenden of observatoren.</p></div>
+<div class="card"><h3>Hulp nodig?</h3><p>Werkt een scherm niet of ontbreekt een wachtwoord? Neem contact op met de beheerder.</p></div>
+</div>
+</section>
+</main>
+<footer>Handleiding GMS Meldkamer · alleen voor oefendoeleinden</footer>
+</body>
+</html>
