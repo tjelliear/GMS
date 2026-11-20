@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uitleg voor centralisten</title>
+<style>
+:root{--bg:#071217;--card:#12353f;--ink:#e8f3f4;--mute:#9db5ba;--teal:#2dd4bf;--red:#ef4444;--orange:#f59e0b;--blue:#3b82f6}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#040b10;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column}
+.wrap{flex:1;display:grid;place-items:center;min-height:0}
+.stage{container-type:inline-size;position:relative;overflow:hidden;background:var(--bg);width:min(100vw,calc((100vh - 52px)*16/9));aspect-ratio:16/9}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:4cqw 6cqw;gap:1.4cqw;font-size:clamp(14px,2.1cqw,34px);line-height:1.4}
+.slide.on{display:flex}
+h1{font-size:clamp(28px,6cqw,90px);margin:0;line-height:1.1}
+h2{font-size:clamp(22px,3.8cqw,60px);margin:0 0 .5cqw}
+p{margin:0}.m{color:var(--mute)}.tag{color:var(--teal);font:600 clamp(11px,1.3cqw,20px) ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em}
+.g{display:grid;gap:1.2cqw;grid-template-columns:repeat(auto-fit,minmax(18cqw,1fr))}
+.c{background:var(--card);border-radius:.9cqw;padding:1.2cqw 1.5cqw}
+.c b{display:block;margin-bottom:.2cqw}.c small{color:var(--mute);font-size:.8em;line-height:1.3;display:block}
+.n{display:inline-grid;place-items:center;width:1.9em;height:1.9em;border-radius:.45em;color:#fff;font-weight:700;margin-right:.6em;flex:none}
+.st .c{display:flex;align-items:center;padding:.7cqw 1cqw}
+ol{margin:0;padding:0;list-style:none;counter-reset:s;display:grid;grid-template-columns:1fr 1fr;gap:1cqw 2cqw}
+ol li{counter-increment:s;display:flex;gap:.8em;align-items:flex-start}
+ol li:before{content:counter(s);flex:none;width:1.8em;height:1.8em;border-radius:50%;background:var(--teal);color:#042;display:grid;place-items:center;font-weight:700}
+ol small{display:block;color:var(--mute);font-size:.8em;line-height:1.3}
+.flow{display:flex;flex-wrap:wrap;gap:.8cqw;align-items:center}.flow span{background:var(--teal);color:#042;font-weight:700;border-radius:.6cqw;padding:.6cqw 1.4cqw}.flow i{font-style:normal;color:var(--mute)}
+.row{display:flex;gap:1cqw;align-items:center;background:var(--card);border-radius:.8cqw;padding:.9cqw 1.3cqw}
+.row small{display:block;color:var(--mute);font-size:.8em}.row .t{margin-left:auto;font:700 1.1em ui-monospace,Menlo,Consolas,monospace}
+.pb{flex:none;border-radius:.4cqw;color:#fff;font-weight:700;padding:.3cqw .9cqw}
+@keyframes bl{50%{background:#5b1d1d}}.late{animation:bl 1.4s infinite}
+ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
+.bar{height:52px;display:flex;gap:10px;align-items:center;padding:0 14px;background:#0b1f26;border-top:1px solid #1d4048;font-size:14px}
+.bar button{background:#12353f;color:var(--ink);border:1px solid #1d4048;border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit}
+.bar button:disabled{opacity:.35;cursor:default}.sp{flex:1}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#7b8794;margin-right:6px}.live .dot{background:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.3)}
+.wait{position:absolute;inset:0;z-index:3;background:rgba(4,11,16,.94);display:none;place-items:center;text-align:center;padding:6cqw;font-size:clamp(16px,2.6cqw,40px)}
+.wait.on{display:grid}.wait small{display:block;color:var(--mute);font-size:.6em;margin-top:.6em}
+@media(max-width:700px){.stage{aspect-ratio:auto;min-height:calc(100vh - 52px);width:100vw}.slide{position:static;padding:22px 18px}.ol,ol{grid-template-columns:1fr}.g{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="stage" id="stage">
+
+<section class="slide on"><span class="tag">GMS MELDKAMER</span><h1>Uitleg voor centralisten</h1><p class="m">Zo werkt de meldkamer: van inloggen en het bord tot de uitgifte van een ambulance.</p></section>
+
+<section class="slide"><h2>Inloggen en werkplek kiezen</h2><p class="m">Kies Centralist, vul het wachtwoord van de beheerder in en kies je werkplek.</p>
+<div class="g"><div class="c"><b>OC/OPS</b><small>Politie en KMar</small></div><div class="c"><b>MKA</b><small>Ambulance</small></div><div class="c"><b>AC/MKB</b><small>Brandweer</small></div><div class="c"><b>Alle diensten</b><small>Alle vier naast elkaar</small></div><div class="c"><b>CaCo en OvD-OC</b><small>Leiding, eigen wachtwoord</small></div></div>
+<p class="m">Je naam invullen is optioneel. Staat er “Tijdelijk niet beschikbaar”? Dan is het systeem offline gehaald.</p></section>
+
+<section class="slide"><h2>Het bord: eenheden en statussen</h2>
+<div class="g st"><div class="c"><span class="n" style="background:#16a34a">1</span>Inzetbaar</div><div class="c"><span class="n" style="background:#3b82f6">2</span>Aanrijdend</div><div class="c"><span class="n" style="background:#8b5cf6">3</span>Ter plaatse</div><div class="c"><span class="n" style="background:#d99a1c">4</span>Vertraagd inzetbaar</div><div class="c"><span class="n" style="background:#7b8794">5</span>Uitmelden</div><div class="c"><span class="n" style="background:#14b8a6">6</span>Spraak</div><div class="c"><span class="n" style="background:#f97316">7</span>Spraak urgent</div><div class="c"><span class="n" style="background:#ec4899">8</span>Eigen initiatief</div><div class="c"><span class="n" style="background:#818cf8">9</span>Informatie</div><div class="c"><span class="n" style="background:#ef4444">0</span>Noodknop</div></div>
+<p class="m">Met de cijfertoetsen 0 tot en met 9 kies je snel een status. Spraakaanvragen staan in de zijbalk: eerst 0, dan 7, 6 en 8.</p></section>
+
+<section class="slide"><h2>Uitgifte van een ambulance</h2>
+<ol><li><span>Nieuwe melding<small>Open een lege incidentkaart</small></span></li><li><span>Gegevens of parserterm<small>MC, urgentie, plaats, straat, bijzonderheden</small></span></li><li><span>Opslaan<small>De melding wacht op uitgifte</small></span></li><li><span>Inzetvoorstel bekijken<small>Beschikbare ambulance bij de plaats</small></span></li><li><span>Eenheid koppelen<small>Gaat automatisch naar status 2</small></span></li><li><span>Tijden vastleggen<small>Vervoer en bestemming</small></span></li><li><span>Sluit incident<small>Eenheden houden hun status</small></span></li></ol></section>
+
+<section class="slide"><h2>Zo kiest het inzetvoorstel</h2>
+<div class="g" style="grid-template-columns:1fr 1fr">
+<div style="display:grid;gap:.8cqw"><div class="c"><small>MC · URGENTIE</small>Hulpvraag ambulancezorg · A1</div><div class="c"><small>PLAATS · STRAAT</small>Zevenaar · Hoofdstraat 1</div><div class="row"><span class="pb" style="background:#16a34a">1</span><span>07-113<small>Zevenaar · Inzetbaar</small></span><span class="pb" style="background:#0d9488;margin-left:auto">Voorstel</span></div></div>
+<ul><li>Eerst de ambulance met standplaats in de plaats, als die status 1 of 4 heeft</li><li>Anders de dichtstbijzijnde beschikbare, met de afstand in km</li><li>Geen beschikbaar? Koppel zelf een eenheid</li></ul></div></section>
+
+<section class="slide"><h2>Overige meldingen</h2><p class="m">Voor politie, KMar en brandweer, in de tab Meldingen.</p>
+<div class="flow"><span>Toevoegen</span><i>›</i><span>Koppelen</span><i>›</i><span>Notities</span><i>›</i><span>Afronden</span></div>
+<ul><li>Gekoppelde eenheden gaan automatisch naar status 2</li><li>Notities zijn gedeeld met alle eenheden op de melding</li><li>Bij afronden gaan eenheden naar status 1, behalve die op 0 en 5</li><li>Heropenen en verwijderen kan ook</li></ul></section>
+
+<section class="slide"><h2>Burgeraanvragen</h2><p class="m">In de zijbalk, altijd op prioriteit, met de wachttijd.</p>
+<div style="display:grid;gap:.8cqw">
+<div class="row late"><span class="pb" style="background:#dc2626">P1</span><span>112 · Brandweer<small>Hoofdstraat 1, rook uit het dak. Rood knipperen na 2 min</small></span><span class="t">02:35</span></div>
+<div class="row"><span class="pb" style="background:#d97706">P2</span><span>0900-8844 · Politie<small>Markt 2, geluidsoverlast. Na 10 min</small></span><span class="t">05:10</span></div>
+<div class="row"><span class="pb" style="background:#2563eb">P3</span><span>Algemeen<small>Vraag aan de meldkamer. Na 20 min</small></span><span class="t">12:36</span></div></div>
+<div class="flow"><span>Oppakken</span><i>›</i><span>Melding maken</span><i>›</i><span>Afronden</span></div></section>
+
+<section class="slide"><h2>CaCo en OvD-OC, en handige tips</h2>
+<div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Leiding</b><ul><li>Calamiteit uitroepen met GRIP-niveau</li><li>Iedereen uitloggen</li><li>Incidenten overnemen</li><li>Testscenario’s om te oefenen</li></ul></div>
+<div class="c"><b>Tips</b><ul><li>Cijfertoetsen voor statussen</li><li>Parsertermen voor ambulance</li><li>Laat het geluid van je browser aan</li><li>MK Overzicht is alleen kijken</li></ul></div></div>
+<p class="m">Hulp nodig? Neem contact op met de beheerder.</p></section>
+
+<div class="wait" id="wait"><div>De presentatie is nog niet gestart<small>Zodra de beheerder start, zie je hier automatisch de dia’s.</small></div></div>
+</div></div>
+<div class="bar" id="bar"><span id="mode"><span class="dot"></span><span id="mt">Verbinden…</span></span><span class="sp"></span><span id="pos"></span><button id="prev">Vorige</button><button id="next">Volgende</button><button id="tog">Zelf bladeren</button></div>
+<script>
+const CFG={url:'https://amytotkfjihycrdmlxdp.supabase.co',key:'sb_publishable_bztsVfpk9adjtlQsr213rQ_4QMlQxrW'};
+const slides=[...document.querySelectorAll('.slide')],$=id=>document.getElementById(id);
+let cur=0,follow=true,pres={aan:false,slide:0},sb=null,offline=false;
+function show(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('on',k===cur));ui();}
+function ui(){
+  const live=follow&&pres.aan&&!offline;
+  $('bar').classList.toggle('live',live);
+  $('mt').textContent=offline?'Geen verbinding: zelf bladeren':follow?(pres.aan?'Live: je volgt de presentator':'Wachten op de presentator'):'Je bladert zelf';
+  $('pos').textContent=(cur+1)+' / '+slides.length;
+  $('prev').disabled=follow||cur===0;$('next').disabled=follow||cur===slides.length-1;
+  $('tog').textContent=follow?'Zelf bladeren':'Volg presentator';$('tog').hidden=offline;
+  $('wait').classList.toggle('on',follow&&!pres.aan&&!offline);
+}
+function apply(){if(follow&&pres.aan)show(pres.slide);else ui();}
+function set(d){pres=Object.assign({aan:false,slide:0},d||{});apply();}
+async function pull(){const r=await sb.from('docs').select('data').eq('collection','instellingen').eq('id','presentatie').maybeSingle();if(r&&r.data&&r.data.data)set(r.data.data);}
+async function init(){
+  try{
+    const m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sb=m.createClient(CFG.url,CFG.key);await pull();
+    sb.channel('presentatie').on('postgres_changes',{event:'*',schema:'public',table:'docs'},p=>{const r=p.new||{};if(r.collection==='instellingen'&&r.id==='presentatie')set(r.data);}).subscribe();
+    setInterval(()=>pull().catch(()=>{}),4000);ui();
+  }catch(e){offline=true;follow=false;ui();}
+}
+$('prev').onclick=()=>show(cur-1);$('next').onclick=()=>show(cur+1);
+$('tog').onclick=()=>{follow=!follow;if(follow)apply();else ui();};
+document.addEventListener('keydown',e=>{if(follow)return;if(e.key==='ArrowRight'||e.key===' ')show(cur+1);if(e.key==='ArrowLeft')show(cur-1);});
+ui();init();
+</script>
+</body>
+</html>
