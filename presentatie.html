@@ -61,9 +61,10 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 <div style="display:grid;gap:.8cqw"><div class="c"><small>MC · URGENTIE</small>Hulpvraag ambulancezorg · A1</div><div class="c"><small>PLAATS · STRAAT</small>Zevenaar · Hoofdstraat 1</div><div class="row"><span class="pb" style="background:#16a34a">1</span><span>07-113<small>Zevenaar · Inzetbaar</small></span><span class="pb" style="background:#0d9488;margin-left:auto">Voorstel</span></div></div>
 <ul><li>Eerst de ambulance met standplaats in de plaats, als die status 1 of 4 heeft</li><li>Anders de dichtstbijzijnde beschikbare, met de afstand in km</li><li>Geen beschikbaar? Koppel zelf een eenheid</li></ul></div></section>
 
-<section class="slide"><h2>Overige meldingen</h2><p class="m">Voor politie, KMar en brandweer, in de tab Meldingen.</p>
-<div class="flow"><span>Toevoegen</span><i>›</i><span>Koppelen</span><i>›</i><span>Notities</span><i>›</i><span>Afronden</span></div>
-<ul><li>Gekoppelde eenheden gaan automatisch naar status 2</li><li>Notities zijn gedeeld met alle eenheden op de melding</li><li>Bij afronden gaan eenheden naar status 1, behalve die op 0 en 5</li><li>Heropenen en verwijderen kan ook</li></ul></section>
+<section class="slide"><h2>Meldingen: brandweer, politie en KMar</h2><p class="m">Zelfde systeem als de ambulance. Politie en KMar delen hun meldingen.</p>
+<div class="flow"><span>Nieuwe melding</span><i>›</i><span>Inzetvoorstel</span><i>›</i><span>Alarmeer</span><i>›</i><span>Sluit incident</span></div>
+<div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Brandweer</b><small>Type voertuig past bij de melding, bijvoorbeeld tankautospuit en hoogwerker. Dichtstbijzijnde kazerne bovenaan, met km.</small></div><div class="c"><b>Politie en KMar</b><small>Type eenheid past bij de melding, zoals Noodhulp of Team verkeer. KMar voorop bij grens en luchthaven.</small></div></div>
+<p class="m">Alleen eenheden met status 1 of 4 worden voorgesteld. Alarmeren zet de eenheid op status 2.</p></section>
 
 <section class="slide"><h2>Burgeraanvragen</h2><p class="m">In de zijbalk, altijd op prioriteit, met de wachttijd.</p>
 <div style="display:grid;gap:.8cqw">
@@ -81,8 +82,10 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 </div></div>
 <div class="bar" id="bar"><span id="mode"><span class="dot"></span><span id="mt">Verbinden…</span></span><span class="sp"></span><span id="pos"></span><button id="prev">Vorige</button><button id="next">Volgende</button><button id="tog">Zelf bladeren</button></div>
 <script>
+window.GMS_BRON='Presentatie';window.GMS_BOTTOM=66;
 const CFG={url:'https://amytotkfjihycrdmlxdp.supabase.co',key:'sb_publishable_bztsVfpk9adjtlQsr213rQ_4QMlQxrW'};
 const slides=[...document.querySelectorAll('.slide')],$=id=>document.getElementById(id);
+window.GMS_CFG=CFG;window.GMS_CTX=function(){return 'dia '+(cur+1);};
 let cur=0,follow=true,pres={aan:false,slide:0},sb=null,offline=false;
 function show(i){cur=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,k)=>s.classList.toggle('on',k===cur));ui();}
 function ui(){
@@ -100,7 +103,7 @@ async function pull(){const r=await sb.from('docs').select('data').eq('collectio
 async function init(){
   try{
     const m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-    sb=m.createClient(CFG.url,CFG.key);await pull();
+    sb=m.createClient(CFG.url,CFG.key);window.GMS_SB=sb;await pull();
     sb.channel('presentatie').on('postgres_changes',{event:'*',schema:'public',table:'docs'},p=>{const r=p.new||{};if(r.collection==='instellingen'&&r.id==='presentatie')set(r.data);}).subscribe();
     setInterval(()=>pull().catch(()=>{}),4000);ui();
   }catch(e){offline=true;follow=false;ui();}
@@ -109,6 +112,57 @@ $('prev').onclick=()=>show(cur-1);$('next').onclick=()=>show(cur+1);
 $('tog').onclick=()=>{follow=!follow;if(follow)apply();else ui();};
 document.addEventListener('keydown',e=>{if(follow)return;if(e.key==='ArrowRight'||e.key===' ')show(cur+1);if(e.key==='ArrowLeft')show(cur-1);});
 ui();init();
+</script>
+<script>
+(function(){
+var CF=window.GMS_CFG||{},KEY='gms-vragen-mine',LAST='gms-vragen-last',mine=[],cl=null,timer=null,cache={},BT=(window.GMS_BOTTOM||14)+'px';
+try{mine=JSON.parse(localStorage.getItem(KEY)||'[]')||[];}catch(e){}
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+var st=document.createElement('style');
+st.textContent='#gq-b{position:fixed;right:14px;z-index:1100;background:#0e9f8e;color:#fff;border:0;border-radius:99px;padding:10px 16px;font:600 14px system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}#gq-p{position:fixed;right:14px;z-index:1100;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:#0e232b;color:#e8f3f4;border:1px solid #1d4048;border-radius:12px;padding:14px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)}#gq-p[hidden],#gq-b[hidden]{display:none}.gq-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.gq-h button{background:none;border:0;color:inherit;font-size:22px;cursor:pointer}#gq-p label{display:block;margin-top:8px;font-size:12px;color:#9db5ba}#gq-p input,#gq-p select,#gq-p textarea{display:block;width:100%;margin-top:3px;background:#071217;color:#e8f3f4;border:1px solid #1d4048;border-radius:6px;padding:7px;font:inherit}#gq-s{margin-top:10px;width:100%;background:#0e9f8e;color:#fff;border:0;border-radius:6px;padding:9px;font:600 14px system-ui,sans-serif;cursor:pointer}#gq-s:disabled{opacity:.5}#gq-m{margin-top:8px;font-size:13px}#gq-m.e{color:#ff9a9a}#gq-m.o{color:#7ee2a0}#gq-l h4{margin:14px 0 6px;font-size:13px}.gq-q{border-top:1px solid #1d4048;padding:8px 0;font-size:13px}.gq-q small{display:block;color:#9db5ba}.gq-a{margin-top:4px;background:#12353f;padding:6px 8px;border-radius:6px}';
+document.head.appendChild(st);
+var b=document.createElement('button');b.id='gq-b';b.type='button';b.textContent='Vraag aan beheer';b.style.bottom=BT;
+var p=document.createElement('div');p.id='gq-p';p.hidden=true;p.style.bottom=BT;
+p.innerHTML='<div class="gq-h"><b>Vraag aan beheer</b><button type="button" id="gq-x" aria-label="Sluiten">\u00d7</button></div>'+
+'<label>Je naam (optioneel)<input id="gq-n" maxlength="60" autocomplete="off"></label>'+
+'<label>Onderwerp<select id="gq-o"><option>Anders</option><option>Inloggen en wachtwoord</option><option>Eenheden en status</option><option>Meldingen en uitgifte</option><option>Burgerscherm</option><option>Presentatie of handleiding</option></select></label>'+
+'<label>Je vraag<textarea id="gq-t" rows="4" maxlength="600"></textarea></label>'+
+'<div id="gq-m"></div><button type="button" id="gq-s">Verstuur</button><div id="gq-l"></div>';
+document.body.appendChild(b);document.body.appendChild(p);
+function $(i){return document.getElementById(i);}
+async function client(){if(window.GMS_SB)return window.GMS_SB;if(cl)return cl;var m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');cl=m.createClient(CF.url,CF.key);return cl;}
+function msg(t,x){var m=$('gq-m');m.className=t;m.textContent=x;}
+function draw(){
+  var ids=mine.filter(function(i){return cache[i];}).reverse();
+  $('gq-l').innerHTML=ids.length?'<h4>Jouw vragen</h4>'+ids.map(function(i){var d=cache[i];return '<div class="gq-q"><div>'+esc(d.tekst)+'</div><small>'+(d.status==='beantwoord'?'Beantwoord':'Wacht op antwoord')+'</small>'+(d.antwoord?'<div class="gq-a"><b>Antwoord:</b> '+esc(d.antwoord)+'</div>':'')+'</div>';}).join(''):'';
+}
+async function load(){
+  if(!mine.length){$('gq-l').innerHTML='';return;}
+  try{var c=await client();var r=await c.from('docs').select('id,data').eq('collection','vragen').in('id',mine);if(r.error)return;cache={};(r.data||[]).forEach(function(x){cache[x.id]=x.data;});draw();}catch(e){}
+}
+async function send(){
+  var t=$('gq-t').value.trim();
+  if(t.length<5)return msg('e','Typ eerst je vraag (minimaal 5 tekens).');
+  var last=0;try{last=+localStorage.getItem(LAST)||0;}catch(e){}
+  var w=Math.ceil((30000-(Date.now()-last))/1000);
+  if(w>0)return msg('e','Wacht nog '+w+' seconden voordat je nog een vraag stuurt.');
+  var open=mine.filter(function(i){return cache[i]&&cache[i].status!=='beantwoord';}).length;
+  if(open>=5)return msg('e','Je hebt al 5 onbeantwoorde vragen. Wacht op een antwoord.');
+  var id='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),ctx='';
+  try{ctx=typeof window.GMS_CTX==='function'?window.GMS_CTX():'';}catch(e){}
+  var rec={tekst:t.slice(0,600),naam:$('gq-n').value.trim().slice(0,60),onderwerp:$('gq-o').value,bron:(window.GMS_BRON||document.title)+(ctx?' ('+ctx+')':''),created:Date.now(),status:'open',antwoord:''};
+  $('gq-s').disabled=true;
+  try{
+    var c=await client();var r=await c.from('docs').upsert({collection:'vragen',id:id,data:rec});if(r.error)throw r.error;
+    mine.push(id);try{localStorage.setItem(KEY,JSON.stringify(mine.slice(-20)));localStorage.setItem(LAST,String(Date.now()));}catch(e){}
+    $('gq-t').value='';msg('o','Je vraag is verstuurd. Het antwoord van de beheerder verschijnt hieronder.');cache[id]=rec;draw();
+  }catch(e){var em=String((e&&e.message)||e);msg('e',/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder.':'Versturen is niet gelukt. Probeer het later opnieuw.');}
+  $('gq-s').disabled=false;
+}
+function openP(){p.hidden=false;b.hidden=true;load();clearInterval(timer);timer=setInterval(load,8000);$('gq-t').focus();}
+function closeP(){p.hidden=true;b.hidden=false;clearInterval(timer);}
+b.onclick=openP;$('gq-x').onclick=closeP;$('gq-s').onclick=send;
+})();
 </script>
 </body>
 </html>
