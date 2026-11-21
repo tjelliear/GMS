@@ -174,6 +174,7 @@ dialog .row{display:flex;justify-content:flex-end;gap:8px}
 [data-urg="U1"]{--c:var(--s8)} [data-urg="U2"]{--c:var(--s3)}
 [data-urg="B1"]{--c:var(--s2)} [data-urg="B2"]{--c:var(--s6)}
 [data-urg="C1"]{--c:var(--s1)} [data-urg="C2"]{--c:var(--s5)}
+[data-urg="P1"]{--c:var(--s0)} [data-urg="P2"]{--c:var(--s7)} [data-urg="P3"]{--c:var(--s2)} [data-urg="P4"]{--c:var(--s5)}
 .amb-row[data-urg]{border-left-color:var(--c)}
 .apanel[data-urg]{border-top:5px solid var(--c)}
 select.field[data-urg]{border-left:6px solid var(--c)}
@@ -364,6 +365,12 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
 .bw-t.dark{background:#0a2a73;cursor:default}.bw-t.red{background:#7a0212;cursor:default}
 .bw-t.pink{background:#d8727a}.bw-t.urg{background:#ff1f26}
 .bw-t.on{background:#1f9d3a}
+.bw-x{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.bw-s{min-height:54px;align-items:center;justify-content:center;text-align:center;font-size:clamp(11px,1.5vw,16px);letter-spacing:.12em}
+.bw-s.al{background:#9b1c1c}
+.bw-s.al.on{background:#ef4444;animation:bgp 1s infinite}
+@media(max-width:700px){.bw-x{grid-template-columns:1fr 1fr}}
+
 .bw-sub{opacity:.85;font-size:11px}
 .bw-t:disabled{opacity:.55;cursor:not-allowed}
 .bw-b{display:grid;grid-template-columns:1.2fr 1.2fr 1.2fr;gap:8px;margin-top:8px}
@@ -672,7 +679,7 @@ function bwPanel(id){
     else if(t[2]==='r')h+='<div class="bw-t red"><i></i>'+t[1]+'</div>';
     else h+='<button type="button" class="bw-t'+(t[3]?' '+t[3]:'')+(act===t[0]?' on':'')+'" data-us="'+t[2]+'" data-bw="'+t[0]+'"'+dis+'><i>'+t[0]+'</i>'+t[1]+'</button>';
   });
-  return h+'</div><div class="bw-b"><div class="bw-t on">STATUS</div><div class="bw-t">INCIDENT</div><div class="bw-t">OVERIGE GROEPEN</div></div></div>';
+  return h+'</div><div class="bw-b"><div class="bw-t on">STATUS</div><div class="bw-t">INCIDENT</div><div class="bw-t">OVERIGE GROEPEN</div></div>'+'<div class="bw-x">'+[['0','NOODKNOP','al'],['8','EIGEN MELDING',''],['9','INFORMATIE',''],['5','UITMELDEN','']].map(function(t){return '<button type="button" class="bw-t bw-s'+(t[2]?' '+t[2]:'')+(st===t[0]?' on':'')+'" data-us="'+t[0]+'"'+dis+'>'+t[1]+'</button>';}).join('')+'</div></div>';
 }
 var role=null;
 var LSC='roepnummers-zevenaar-calamiteiten-v1';
@@ -791,10 +798,14 @@ function sbAdapter(sb){
           if(p.eventType==='DELETE')delete cache[p.old.id];else cache[p.new.id]=p.new.data;
           emit();
         };
-        sb.from('docs').select('id,data').eq('collection',name).then(function(r){
-          if(r.error){if(err)err(r.error);return;}
-          r.data.forEach(function(x){cache[x.id]=x.data;});emit();
-        });
+        var PG=1000;
+        (function pg(from){
+          sb.from('docs').select('id,data').eq('collection',name).order('id').range(from,from+PG-1).then(function(r){
+            if(r.error){if(err)err(r.error);return;}
+            r.data.forEach(function(x){cache[x.id]=x.data;});
+            if(r.data.length===PG)pg(from+PG);else emit();
+          });
+        })(0);
       }
     };
   }};
@@ -1240,7 +1251,7 @@ function unitScreenBase(){
   var btns=STATUSES.filter(function(x){return x.k!=='uit';}).map(function(x){
     return '<button class="ub-btn" data-st="'+x.k+'" data-us="'+x.k+'" aria-pressed="'+(st===x.k)+'"'+dis+'><span class="badge">'+x.k+'</span>'+esc(x.l)+'</button>';
   }).join('');
-  if(tabOf(UNITS[id].section)==='brandweer')return '<div class="ub" style="display:block"><div class="ub-left">'+head+inc+unitHist(id,m)+'</div></div>';
+  if(tabOf(UNITS[id].section)==='brandweer')return '<div class="ub" style="display:block"><div class="ub-left">'+head+inc+unitHist(id,m)+'</div>'+eigp+'</div>';
   return '<div class="ub"><div class="ub-left">'+head+inc+unitHist(id,m)+'</div><div class="ub-right"><div class="apanel"><h3>Status doorgeven<small>'+id+'</small></h3><div class="pb"><div class="ub-grid">'+btns+'</div></div></div>'+eigp+'</div></div>';
 }
 async function unitSetStatusLocal(k){
@@ -1271,7 +1282,7 @@ function normCalam(v){
 }
 function normBer(v){
   if(!v||typeof v!=='object'||typeof v.text!=='string')return null;
-  return {text:v.text,t:+v.t||0,by:String(v.by||''),cid:String(v.cid||''),aan:Array.isArray(v.aan)?v.aan.filter(function(x){return typeof x==='string';}):[]};
+  return {text:v.text,t:+v.t||0,by:String(v.by||''),cid:String(v.cid||''),van:String(v.van||''),aan:Array.isArray(v.aan)?v.aan.filter(function(x){return typeof x==='string';}):[]};
 }
 function newCalId(){return mode==='shared'?db.collection('calamiteiten').doc().id:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 function writeCalam(id,rec){
@@ -1282,12 +1293,28 @@ function writeCalam(id,rec){
   persistLocal();render();return Promise.resolve();
 }
 function writeBer(id,rec){
-  if(rec)logEvent('Bericht verstuurd aan '+(rec.aan.length?rec.aan.map(function(t){return DN[t]||t;}).join(', '):'iedereen'));
+  if(rec)logEvent('Bericht verstuurd aan '+(rec.aan.length?rec.aan.map(berName).join(', '):'iedereen'));
   if(mode==='shared'){var r=db.collection('berichten').doc(id);return rec?r.set(rec):r.delete();}
   if(rec)ber[id]=rec;else delete ber[id];
   persistLocal();render();return Promise.resolve();
 }
-function berVisible(m){return !role||!role.tabs||!m.aan.length||m.aan.some(function(t){return role.tabs.indexOf(t)>=0;});}
+var BERN={'mk:oc':'OC/OPS','mk:mka':'MKA','mk:mkb':'AC/MKB','rol:ovd':'OvD-OC','rol:caco':'CaCo'};
+var BEROPT=[['mk:oc','OC/OPS (politie en KMar)'],['mk:mka','MKA (ambulance)'],['mk:mkb','AC/MKB (brandweer)'],['rol:ovd','OvD-OC'],['rol:caco','CaCo']];
+var BERBACK={oc:'mk:oc',mka:'mk:mka',mkb:'mk:mkb',ovd:'rol:ovd',caco:'rol:caco'};
+var MKTABS={'mk:oc':['politie','kmar'],'mk:mka':['ambulance'],'mk:mkb':['brandweer']};
+function berName(t){return BERN[t]||DN[t]||t;}
+function berCanSend(){return !!role&&role.id!=='unit'&&role.id!=='burger'&&role.id!=='mkov'&&canWrite;}
+function berVisible(m){
+  if(!role||role.id==='unit'||role.id==='burger')return false;
+  if(role.id==='mkov')return true;
+  if(m.van?m.van===role.id:m.cid===CLIENT)return true;
+  if(!m.aan.length)return true;
+  if(m.aan.indexOf('rol:'+role.id)>=0)return true;
+  var other=m.aan.filter(function(t){return t.indexOf('rol:')!==0;});
+  if(!other.length)return false;
+  if(!role.tabs)return true;
+  return other.some(function(t){var tb=MKTABS[t]||(DN[t]?[t]:null);return !!tb&&tb.some(function(x){return role.tabs.indexOf(x)>=0;});});
+}
 function berList(){return Object.keys(ber).filter(function(k){return berVisible(ber[k]);}).sort(function(a,b){return ber[b].t-ber[a].t;});}
 function berUnread(){return tab==='ber'?0:berList().filter(function(k){return ber[k].t>berSeen&&ber[k].cid!==CLIENT;}).length;}
 var roleById=function(id){for(var i=0;i<ROLES.length;i++){if(ROLES[i].id===id)return ROLES[i];}return null;};
@@ -1431,7 +1458,7 @@ function repHtml(){
   var bu=Object.keys(d.bu).sort().map(function(u){return esc(u)+': '+d.bu[u];}).join(' &middot; ')||'-';
   var pd=Object.keys(d.pd).map(function(k){return esc(k)+': '+d.pd[k];}).join(' &middot; ');
   return '<div class="apanel"><h3>Overzicht<small>samenvatting</small></h3><div class="pb">'+
-    row('Ambulance-meldingen',d.A.length+' ('+d.A.filter(function(m){return m.closed;}).length+' afgerond)')+
+    row('Incidenten (alle diensten)',d.A.length+' ('+d.A.filter(function(m){return m.closed;}).length+' afgerond)')+
     row('Per urgentie',bu)+row('Meldingen per dienst',pd)+
     row('Gem. tot uitgerukt',mmin(d.avgUit))+row('Gem. tot ter plaatse',mmin(d.avgTerp))+
     row('Statuswijzigingen',d.st)+row('Calamiteiten',d.cal)+row('Berichten',d.ber)+row('Testmeldingen gestart',d.scen)+
@@ -1445,7 +1472,7 @@ function repCsv(){
   if(!downloads)return;
   var d=repData(),q=function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';},m1=function(ms){return ms==null?'':Math.round(ms/6000)/10;},L=['"Overzicht"'];
   var add=function(a,b){L.push([a,b].map(q).join(';'));};
-  add('Ambulance-meldingen',d.A.length);
+  add('Incidenten (alle diensten)',d.A.length);
   Object.keys(d.bu).forEach(function(u){add('Urgentie '+u,d.bu[u]);});
   Object.keys(d.pd).forEach(function(k){add('Meldingen '+k,d.pd[k]);});
   add('Gem. tot uitgerukt (min)',m1(d.avgUit));add('Gem. tot ter plaatse (min)',m1(d.avgTerp));
@@ -1457,6 +1484,7 @@ function repCsv(){
 var ambTermKey=function(x){return String(x||'').trim().toLowerCase().replace(/^-+/,'').replace(/\s+/g,' ');};
 var fmtTimeS=function(ts){try{return new Date(ts).toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}catch(e){return '';}};
 function ambTerms(){
+  if(ambDisc()!=='ambulance')return DISC_TERMS[ambDisc()].map(function(t){return {k:t.k,mc:t.mc,urg:t.urg,key:ambTermKey(t.k),did:'',al:[]};});
   var m={},order=[];
   AMB_TERMS.forEach(function(t){var k=ambTermKey(t.k);if(!(k in m))order.push(k);m[k]={k:t.k,mc:t.mc,urg:t.urg||'',key:k,did:'',al:(t.al||[]).map(ambTermKey)};});
   Object.keys(parsersCustom).forEach(function(did){
@@ -1550,7 +1578,7 @@ function renderTabs(){
   var act={},names={},order=[],total=0;
   SECTIONS.forEach(function(s){var t=tabOf(s);if(!roleOk(t))return;if(!(t in act)){act[t]=0;order.push(t);names[t]=s.parent?'Politie':s.short;}});
   ORDER.filter(unitOk).forEach(function(id){if(isActive(statusOf(id))){act[tabOf(UNITS[id].section)]++;total++;}});
-  var items=[{id:'all',n:'Alles',c:total}].concat(isLead()?[{id:'caco',n:role.id==='ovd'?'OvD-OC':'CaCo',c:ambOpenIds().length+openMeldingen().length}]:[]).concat(order.map(function(t){return {id:t,n:names[t],c:act[t]};}))
+  var items=[{id:'all',n:'Alles',c:total}].concat(isLead()?[{id:'caco',n:role.id==='ovd'?'OvD-OC':'CaCo',c:ambOpenAll().length+openMeldingen().length}]:[]).concat(order.map(function(t){return {id:t,n:names[t],c:act[t]};}))
     .concat([{id:'ber',n:'Berichten',c:berUnread()},{id:'meldingen',n:'Meldingen',c:openMeldingen().length}]);
   $('tabs').innerHTML=items.map(function(it){
     return '<button class="tab" data-t="'+it.id+'" aria-pressed="'+(tab===it.id)+'">'+esc(it.n)+'<b>'+it.c+'</b></button>';
@@ -1627,15 +1655,114 @@ function unitsBoard(){
 }
 
 /* ---------- Ambulance-scherm ---------- */
-function ambOpenIds(){
+/* ---------- Meldingen per dienst (zelfde systeem als ambulance) ---------- */
+var DISC={
+  ambulance:{code:'A',name:'AMB',urg:AMB_URG,urgL:'Urgentie',mcL:'MC (meldingsclassificatie)',best:true,tt:['uit','terp','verv','best','vrij'],tab:'ambulance'},
+  brandweer:{code:'B',name:'Brandweer',urg:['P1','P2','P3'],urgL:'Prioriteit',mcL:'Soort melding',best:false,tt:['uit','terp','vrij'],tab:'brandweer'},
+  politie:{code:'P',name:'Politie/KMar',urg:['P1','P2','P3','P4'],urgL:'Prioriteit',mcL:'Classificatie',best:false,tt:['uit','terp','vrij'],tab:'politie'}
+};
+var TTN={uit:'Uit',terp:'Terp',verv:'Verv',best:'Best',vrij:'Vrij'};
+function ambDisc(){return tab==='brandweer'?'brandweer':(tab==='politie'||tab==='kmar')?'politie':'ambulance';}
+function discOf(m){return DISC[m&&m.disc]?m.disc:'ambulance';}
+function discCfg(){return DISC[ambDisc()];}
+var DISC_TERMS={
+  brandweer:[{k:'Brand woning',mc:'Brand woning',urg:'P1'},{k:'Brand gebouw',mc:'Brand gebouw',urg:'P1'},{k:'Brand buiten',mc:'Brand buiten',urg:'P2'},{k:'Natuurbrand',mc:'Natuurbrand',urg:'P2'},{k:'Voertuigbrand',mc:'Voertuigbrand',urg:'P2'},{k:'Automatische brandmelding',mc:'Automatische brandmelding',urg:'P2'},{k:'Verkeersongeval',mc:'Hulpverlening verkeersongeval',urg:'P1'},{k:'Hulpverlening',mc:'Hulpverlening',urg:'P2'},{k:'Waterongeval',mc:'Waterongeval',urg:'P1'},{k:'Gevaarlijke stoffen',mc:'Gevaarlijke stoffen',urg:'P1'},{k:'Liftopsluiting',mc:'Liftopsluiting',urg:'P3'},{k:'Dienstverlening',mc:'Dienstverlening',urg:'P3'}],
+  politie:[{k:'Inbraak op heterdaad',mc:'Inbraak op heterdaad',urg:'P1'},{k:'Geweld',mc:'Geweld / mishandeling',urg:'P1'},{k:'Aanrijding met letsel',mc:'Verkeersongeval met letsel',urg:'P1'},{k:'Inbraak',mc:'Inbraak',urg:'P2'},{k:'Ruzie',mc:'Ruzie',urg:'P2'},{k:'Bedreiging',mc:'Bedreiging',urg:'P2'},{k:'Vermist',mc:'Vermist persoon',urg:'P2'},{k:'Verkeersongeval',mc:'Verkeersongeval',urg:'P2'},{k:'Verdacht persoon',mc:'Verdacht persoon',urg:'P3'},{k:'Overlast',mc:'Overlast',urg:'P3'},{k:'Winkeldiefstal',mc:'Winkeldiefstal',urg:'P3'},{k:'Hulpverlening',mc:'Hulpverlening',urg:'P3'}]
+};
+/* Brandweer: welk type voertuig past bij welke melding */
+var BW_ROLES=[
+  {k:'ts',n:'Tankautospuit',re:/tankautospuit/i,not:/terreinvaardig|natuurbrand/i},
+  {k:'tsn',n:'Tankautospuit terreinvaardig',re:/terreinvaardig|natuurbrand/i},
+  {k:'hw',n:'Hoogwerker',re:/hoogwerker/i},
+  {k:'hv',n:'Hulpverleningsvoertuig',re:/hulpverlening/i},
+  {k:'wo',n:'Waterongevallenvoertuig',re:/waterongeval/i},
+  {k:'ags',n:'Adviseur gevaarlijke stoffen',re:/\bAGS\b|gevaarlijke/i},
+  {k:'ovd',n:'Officier van Dienst',re:/officier van dienst|\bOvD\b/i}
+];
+function bwNeeds(mc,urg){
+  var m=String(mc||'').toLowerCase(),n;
+  if(/natuurbrand/.test(m))n=['tsn','ts'];
+  else if(/water/.test(m))n=['wo','ts'];
+  else if(/gevaarlijke|gaslek|lek/.test(m))n=['ts','ags'];
+  else if(/hulpverlening|verkeersongeval|lift|dier|ongeval/.test(m))n=['hv','ts'];
+  else n=['ts'];
+  if(/brand/.test(m)&&/woning|gebouw|bedrijf|industrie/.test(m))n.push('hw');
+  if(urg==='P1')n.push('ovd');
+  return n;
+}
+/* Politie en KMar: voorkeursvolgorde van eenheidstypen per soort melding ('@verkeer' = team verkeer) */
+var POL_PREF=[
+  [/heterdaad|geweld|mishandel|bedreig|ruzie|steek|schiet|wapen/i,['Noodhulp (duo)','Noodhulp (solo)','Onopvallend','Horeca','Motor','Fiets']],
+  [/verkeer|aanrijding|ongeval/i,['@verkeer','Noodhulp (duo)','Motor','Noodhulp (solo)']],
+  [/vermist|hond|spoor/i,['Hondeleider (duo)','Hondeleider (solo)','Noodhulp (duo)','Noodhulp (solo)']],
+  [/horeca|evenement|uitgaan/i,['Horeca','Noodhulp (duo)','Fiets']],
+  [/overlast|wijk|jeugd|lawaai/i,['Wijkagent','Fiets','Noodhulp (solo)','Horeca']],
+  [/winkel|diefstal|inbraak|verdacht/i,['Noodhulp (duo)','Noodhulp (solo)','Onopvallend','Wijkagent']]
+];
+var POL_DEF=['Noodhulp (duo)','Noodhulp (solo)','Wijkagent','Onopvallend'];
+function kazPlace(id){
+  var g=String(UNITS[id].group.name||'').replace(/^\d+-\d+\s+/,'').toLowerCase(),keys=Object.keys(AMB_GEO);
+  for(var i=0;i<keys.length;i++){if(g.indexOf(keys[i])>=0)return keys[i];}
+  return null;
+}
+function incRow(id,i,sub,km){
+  var st=statusOf(id),tag=(i===0)?'<span class="prop-tag">Voorstel</span>':'';
+  var kms=(km&&km>0)?' &middot; ca. '+km.toFixed(km<10?1:0).replace('.',',')+' km':'';
+  return '<div class="prop-row"><span class="pi"><span class="badge sm" data-st="'+st+'">'+st+'</span>'+id+tag+'</span>'+
+    '<span class="ps">'+esc(sub)+kms+' &middot; '+esc(ST[st].l)+'</span>'+
+    '<button class="btn sm'+(tag?' primary':'')+'" data-aa="alarm" data-uid="'+id+'"'+(canWrite?'':' disabled')+'>Alarmeer</button></div>';
+}
+function incPropHtml(d){
+  var cur=ambCur(),mc=String(af.mc||''),urg=af.urg||'',linked=cur?cur.units:[],busy=ambBusy(ambSel),html='';
+  var avail=function(id){var st=statusOf(id);return linked.indexOf(id)<0&&!busy[id]&&(st==='1'||st==='4');};
+  var rank=function(id){return statusOf(id)==='1'?0:1;};
+  var tabIs=function(id,t){return tabOf(UNITS[id].section)===t;};
+  var sub='margin:8px 0 4px';
+  if(d==='brandweer'){
+    var pl=String(af.plaats||'').trim(),g=ambGeo(pl);
+    if(!mc)html+='<p class="m-none" style="margin:0 0 6px">Kies een snelle term (bijvoorbeeld Brand woning) of vul de soort melding in voor een gericht voorstel.</p>';
+    if(!g)html+='<p class="m-none" style="margin:0 0 6px">'+(pl?'Plaats '+esc(pl)+' staat niet in de plaatsenlijst: geen afstanden.':'Vul bij Plaats de plaats in voor afstanden vanaf de kazerne.')+'</p>';
+    var used={};
+    bwNeeds(mc,urg).forEach(function(k){
+      var r=BW_ROLES.filter(function(x){return x.k===k;})[0];
+      var c=ORDER.filter(function(id){var l=UNITS[id].label||'';return tabIs(id,'brandweer')&&r.re.test(l)&&!(r.not&&r.not.test(l))&&avail(id)&&!used[id];}).map(function(id){var pk=kazPlace(id),gg=pk?AMB_GEO[pk]:null;return {id:id,km:(g&&gg)?ambKm(g,gg):null};});
+      c.sort(function(a,b){var ka=a.km==null?1e9:a.km,kb=b.km==null?1e9:b.km;return (ka-kb)||(rank(a.id)-rank(b.id));});
+      html+='<p style="'+sub+'"><b>'+esc(r.n)+'</b></p>'+(c.length?c.slice(0,2).map(function(x,i){if(i===0)used[x.id]=1;return incRow(x.id,i,(UNITS[x.id].label||'')+' \u00b7 '+UNITS[x.id].group.name,x.km);}).join(''):'<p class="m-none" style="margin:0">Geen beschikbare eenheid van dit type.</p>');
+    });
+  }else{
+    var m=mc.toLowerCase(),pref=POL_DEF;
+    POL_PREF.some(function(p){if(p[0].test(m)){pref=p[1];return true;}return false;});
+    var kmFirst=/grens|vreemdelingen|schiphol|luchthaven|marechaussee|kmar|militair|vliegveld/.test(m);
+    var score=function(id){
+      var u=UNITS[id],gn=String(u.group.name||'').toLowerCase();
+      if(tabIs(id,'kmar'))return kmFirst?-1:50;
+      for(var i=0;i<pref.length;i++){var p=pref[i];if(p.charAt(0)==='@'?(u.section&&u.section.id===p.slice(1)):gn.indexOf(p.toLowerCase())>=0)return i;}
+      return 99;
+    };
+    var pool=ORDER.filter(function(id){return (tabIs(id,'politie')||tabIs(id,'kmar'))&&avail(id);});
+    if(!mc)html+='<p class="m-none" style="margin:0 0 6px">Kies een snelle term (bijvoorbeeld Inbraak op heterdaad) voor een gericht voorstel. Nu staat een standaardvoorstel.</p>';
+    html+='<p class="m-none" style="margin:0 0 6px">Voorstel op soort melding en beschikbaarheid. Politie-eenheden hebben geen standplaats, dus er zijn geen afstanden.</p>';
+    var cand=pool.map(function(id){return {id:id,s:score(id)};}).filter(function(x){return x.s<99;}).sort(function(a,b){return (a.s-b.s)||(rank(a.id)-rank(b.id))||(a.id<b.id?-1:1);});
+    html+=cand.length?cand.slice(0,4).map(function(x,i){return incRow(x.id,i,tabIs(x.id,'kmar')?'KMar \u00b7 '+UNITS[x.id].group.name:UNITS[x.id].group.name,null);}).join(''):'<p class="m-none" style="margin:0">Geen passende beschikbare eenheid.</p>';
+    var polLinked=linked.filter(function(id){return UNITS[id]&&tabIs(id,'politie');}),ovdLinked=polLinked.some(function(id){return /OVD-P/i.test(UNITS[id].group.name||'');});
+    if(polLinked.length>3&&!ovdLinked){
+      var hoofd=function(id){return /^H-/i.test(UNITS[id].group.name||'')?1:0;};
+      var ov=pool.filter(function(id){return /OVD-P/i.test(UNITS[id].group.name||'');}).sort(function(a,b){return rank(a)-rank(b)||hoofd(a)-hoofd(b)||(a<b?-1:1);})[0];
+      html+='<p style="'+sub+'"><b>Officier van Dienst</b> <span class="m-none">(meer dan 3 eenheden gekoppeld)</span></p>'+(ov?incRow(ov,0,UNITS[ov].group.name,null):'<p class="m-none" style="margin:0">Geen OVD-P beschikbaar.</p>');
+    }
+  }
+  return html;
+}
+function ambOpenAll(){
   return Object.keys(amb).filter(function(k){return !amb[k].closed&&!ovnHide(amb[k]);}).sort(function(a,b){return (amb[a].created||0)-(amb[b].created||0);});
 }
+function ambOpenIds(){var d=ambDisc();return ambOpenAll().filter(function(k){return discOf(amb[k])===d;});}
 function ambBusy(except){
   var o={};
-  ambOpenIds().forEach(function(k){if(k!==except)amb[k].units.forEach(function(u){o[u]=k;});});
+  ambOpenAll().forEach(function(k){if(k!==except)amb[k].units.forEach(function(u){o[u]=k;});});
   return o;
 }
-function ambCur(){return ambSel&&amb[ambSel]&&!ovnHide(amb[ambSel])?amb[ambSel]:null;}
+function ambCur(){return ambSel&&amb[ambSel]&&!ovnHide(amb[ambSel])&&discOf(amb[ambSel])===ambDisc()?amb[ambSel]:null;}
 function ambLoc(m){
   var l=[((m.straat||'')+' '+(m.huisnr||'')).trim(),m.plaats||''].filter(Boolean).join(', ');
   return l||'Locatie onbekend';
@@ -1652,6 +1779,7 @@ function ambRow(id){
 }
 function ambRank(st){var r={'1':0,'4':1,'uit':2,'5':3,'2':4,'3':5};return st in r?r[st]:6;}
 function ambPlaatsen(){
+  if(ambDisc()!=='ambulance')return Object.keys(AMB_GEO).map(function(k){return k.replace(/(^|[ -])(\w)/g,function(m,a,b){return a+b.toUpperCase();});}).sort();
   var seen={},out=[];
   ORDER.forEach(function(id){var u=UNITS[id];if(u.group.name===AMB_GROUP&&u.label&&!seen[u.label]){seen[u.label]=1;out.push(u.label);}});
   return out.sort();
@@ -1674,6 +1802,7 @@ function ambKm(a,b){
   return 2*6371*Math.asin(Math.sqrt(x));
 }
 function ambPropHtml(){
+  if(ambDisc()!=='ambulance')return incPropHtml(ambDisc());
   var cur=ambCur(),p=(af.plaats||'').trim();
   if(!p)return '<p class="m-none">Vul bij Plaats een plaats in (bijvoorbeeld Zevenaar). Is daar een ambulance beschikbaar, dan wordt die voorgesteld, anders de dichtstbijzijnde beschikbare.</p>';
   var pl=p.toLowerCase(),linked=cur?cur.units:[],busy=ambBusy(ambSel);
@@ -1732,6 +1861,7 @@ function ambParserHtml(){
         AMB_URG.map(function(u){return '<option value="'+u+'"'+(parDraft.urg===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select></label>'+
       '<label class="c3"><span>&nbsp;</span><button class="btn" data-aa="parAdd"'+dis+'>Term toevoegen</button></label>'+
     '</div></details>';
+  if(ambDisc()!=='ambulance')return '<div class="terms" style="max-height:240px;overflow:auto">'+btns+'</div>';
   return '<div class="terms" style="max-height:240px;overflow:auto">'+btns+'</div>'+man;
 }
 function ambHistHtml(){
@@ -1745,40 +1875,40 @@ function ambHistHtml(){
     '<datalist id="ambTerms">'+ambTerms().reduce(function(a,t){return a.concat([t.k],(t.al||[]).map(function(x){return '-'+x;}));},[]).map(function(v){return '<option value="'+esc(v)+'"></option>';}).join('')+'</datalist>';
 }
 function ambBoard(){
-  var dis=canWrite?'':' disabled',cur=ambCur(),open=ambOpenIds();
+  var dis=canWrite?'':' disabled',cur=ambCur(),open=ambOpenIds(),C=discCfg(),D=ambDisc();
   var run=open.filter(function(k){return amb[k].units.length;}),wait=open.filter(function(k){return !amb[k].units.length;});
-  var closed=Object.keys(amb).filter(function(k){return amb[k].closed&&!ovnHide(amb[k]);}).sort(function(a,b){return (amb[b].closedAt||0)-(amb[a].closedAt||0);});
+  var closed=Object.keys(amb).filter(function(k){return amb[k].closed&&!ovnHide(amb[k])&&discOf(amb[k])===D;}).sort(function(a,b){return (amb[b].closedAt||0)-(amb[a].closedAt||0);});
   var list=function(ids,empty){return ids.length?'<div class="arows">'+ids.map(ambRow).join('')+'</div>':'<p class="m-none pb">'+empty+'</p>';};
   var left=
-    '<div class="apanel"><h3>Lopende incidenten AMB<small>'+run.length+'</small></h3>'+list(run,'Geen lopende incidenten.')+'</div>'+
-    '<div class="apanel"><h3>Openstaande incidenten AMB<small>'+wait.length+'</small></h3>'+list(wait,'Geen openstaande incidenten.')+
+    '<div class="apanel"><h3>Lopende incidenten '+C.name+'<small>'+run.length+'</small></h3>'+list(run,'Geen lopende incidenten.')+'</div>'+
+    '<div class="apanel"><h3>Openstaande incidenten '+C.name+'<small>'+wait.length+'</small></h3>'+list(wait,'Geen openstaande incidenten.')+
       '<div class="pb m-none">Wachtend op uitgifte</div></div>'+
-    '<div class="legend" aria-label="Urgentiekleuren">'+AMB_URG.map(function(u){return '<span class="badge sm" data-urg="'+u+'">'+u+'</span>';}).join('')+'</div>'+
+    '<div class="legend" aria-label="Urgentiekleuren">'+C.urg.map(function(u){return '<span class="badge sm" data-urg="'+u+'">'+u+'</span>';}).join('')+'</div>'+
     '<details id="ambClosedDet" class="apanel"'+(ambClosedOpen?' open':'')+'><summary class="pb" style="cursor:pointer;font-weight:700">Afgerond ('+closed.length+')</summary>'+
       (closed.length?'<div class="arows">'+closed.map(function(k){
         return '<div class="arow-wrap">'+ambRow(k)+
           '<button class="btn sm" data-aa="reopen" data-aid="'+esc(k)+'"'+dis+'>Heropenen</button>'+
           '<button class="btn sm danger" data-aa="delete" data-aid="'+esc(k)+'"'+dis+'>Verwijder</button></div>';
       }).join('')+'</div>':'<p class="m-none pb">Nog niets afgerond.</p>')+'</details>';
-  var linked=(cur&&cur.units.length)?'<div style="overflow-x:auto"><table class="tt"><thead><tr><th>Eenheid</th><th>Uit</th><th>Terp</th><th>Verv</th><th>Best</th><th>Vrij</th></tr></thead><tbody>'+cur.units.map(function(id){
+  var linked=(cur&&cur.units.length)?'<div style="overflow-x:auto"><table class="tt"><thead><tr><th>Eenheid</th>'+C.tt.map(function(f){return '<th>'+TTN[f]+'</th>';}).join('')+'</tr></thead><tbody>'+cur.units.map(function(id){
     var st=statusOf(id),n=nameList(data[id]).join(' / '),tt=(cur.tijden&&cur.tijden[id])||{};
     var cell=function(f){return tt[f]?fmtTime(tt[f]):((canWrite&&(f==='verv'||f==='best'))?'<button class="btn sm" data-aa="stamp" data-uid="'+id+'" data-f="'+f+'">nu</button>':'&ndash;');};
     return '<tr><td><span class="unit-chip" data-st="'+st+'"><button class="chip-open" data-id="'+id+'" data-fk="au:'+id+'"><span class="badge">'+(st==='uit'?'&ndash;':st)+'</span>'+id+(UNITS[id]&&UNITS[id].label?' &middot; '+esc(UNITS[id].label):'')+(n?' &middot; '+esc(n):'')+'</button>'+
       '<button class="chip-x" data-aa="unlink" data-uid="'+id+'" aria-label="Ontkoppel '+id+'"'+dis+'>&times;</button></span></td>'+
-      ['uit','terp','verv','best','vrij'].map(function(f){return '<td>'+cell(f)+'</td>';}).join('')+'</tr>';
+      C.tt.map(function(f){return '<td>'+cell(f)+'</td>';}).join('')+'</tr>';
   }).join('')+'</tbody></table></div>':'';
-  var urgSel='<label class="c2"><span>Urgentie</span><select class="field" data-fk="af:urg" data-af="urg" data-urg="'+esc(af.urg)+'"'+dis+'><option value="">&mdash;</option>'+
-    AMB_URG.map(function(u){return '<option value="'+u+'"'+(af.urg===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select></label>';
+  var urgSel='<label class="c2"><span>'+C.urgL+'</span><select class="field" data-fk="af:urg" data-af="urg" data-urg="'+esc(af.urg)+'"'+dis+'><option value="">&mdash;</option>'+
+    C.urg.map(function(u){return '<option value="'+u+'"'+(af.urg===u?' selected':'')+'>'+u+'</option>';}).join('')+'</select></label>';
   var mid=
     '<div class="apanel"><h3>Parsertermen<small>snelle keuze</small></h3><div class="pb">'+ambParserHtml()+'</div></div>'+
     '<div class="apanel" data-urg="'+esc(af.urg)+'"><h3>Incidentkaart<small>'+(cur?'Melding '+(cur.nr||'')+(cur.ovn?' &middot; overgenomen door '+esc(cur.ovn):''):'Nieuwe melding')+'</small></h3><div class="pb">'+
       '<div class="aform">'+
-        ambField('mc','MC (meldingsclassificatie)','c4','maxlength="80"')+urgSel+
+        ambField('mc',C.mcL,'c4','maxlength="80"')+urgSel+
         ambField('melder','Melder','c4','maxlength="80"')+ambField('tel','Tel.','c2','maxlength="30" inputmode="tel"')+
         ambField('straat','Straat','c4','maxlength="80"')+ambField('huisnr','Nr.','c2','maxlength="12"')+
         ambField('plaats','Plaats','c4','maxlength="60" list="ambPlaatsen"')+ambField('postcode','Postcode','c2','maxlength="8"')+
         ambField('bijz','Bijzonderheden','c6','maxlength="200"')+
-        ambField('best','Bestemming','c6','maxlength="100" placeholder="Nog niet vastgelegd"')+
+        (C.best?ambField('best','Bestemming','c6','maxlength="100" placeholder="Nog niet vastgelegd"'):'')+
       '</div>'+
       '<datalist id="ambPlaatsen">'+ambPlaatsen().map(function(x){return '<option value="'+esc(x)+'"></option>';}).join('')+'</datalist>'+
       '<div class="abtns"><button class="btn primary" data-aa="save"'+dis+'>Opslaan</button>'+
@@ -1792,7 +1922,7 @@ function ambBoard(){
     '<div class="apanel"><h3>Inzetvoorstel</h3><div class="pb" id="ambProp">'+ambPropHtml()+'</div></div>'+
     '<div class="apanel"><h3>Historie</h3><div class="pb">'+ambHistHtml()+'</div></div>'+
     '<div class="apanel"><h3>Intern kladblok</h3><div class="pb"><textarea class="field" data-fk="af:klad" data-af="klad" maxlength="2000" placeholder="Interne berichten"'+dis+'>'+esc(af.klad)+'</textarea></div></div>';
-  var right=unitsBoard().replace('<h2>Ambulance</h2>','<h2>Eenhedenoverzicht AMB</h2>');
+  var right=D==='ambulance'?unitsBoard().replace('<h2>Ambulance</h2>','<h2>Eenhedenoverzicht AMB</h2>'):'<h2>Eenhedenoverzicht '+C.name+'</h2>'+unitsBoard();
   return '<div class="amb"><div class="amb-left">'+left+'</div><div class="amb-mid">'+mid+'</div><div class="amb-right">'+right+'</div></div>';
 }
 async function ambSave(mut){
@@ -1804,8 +1934,8 @@ async function ambSave(mut){
   if(cur){rec=Object.assign({},cur);rec.log=(cur.log||[]).slice();id=ambSel;}
   else{
     var mx=0;Object.keys(amb).forEach(function(k){mx=Math.max(mx,amb[k].nr||0);});
-    rec={nr:mx+1,units:[],closed:false,created:Date.now()};
-    rec.log=[{t:rec.created,k:'',x:'Oproep aangemaakt door discipline: A -- Nieuwe melding.'}];
+    rec={nr:mx+1,units:[],closed:false,created:Date.now(),disc:ambDisc()};
+    rec.log=[{t:rec.created,k:'',x:'Oproep aangemaakt door discipline: '+discCfg().code+' -- Nieuwe melding.'}];
     id=newAmbId();
   }
   AMB_F.forEach(function(k){rec[k]=String(af[k]||'').replace(/\s+$/,'').replace(/^\s+/,'');});
@@ -1962,14 +2092,14 @@ function cacoBoard(){
   var stats='<div class="apanel"><h3>Eenheden per dienst<small>in dienst</small></h3><div class="pb"><div class="stats">'+order.map(function(t){
     return '<div class="stat"><b>'+seen[t].act+'</b><span>'+esc(seen[t].n)+' &middot; van '+seen[t].tot+'</span></div>';
   }).join('')+'</div></div></div>';
-  var ao=ambOpenIds().sort(function(a,b){return (amb[b].created||0)-(amb[a].created||0);});
+  var ao=ambOpenAll().sort(function(a,b){return (amb[b].created||0)-(amb[a].created||0);});
   var ambList=ao.length?'<div class="arows">'+ao.map(function(id){
     var m=amb[id];
     return '<button class="amb-row" data-urg="'+esc(m.urg||'')+'" data-goto="amb:'+esc(id)+'">'+
       '<span class="nr">'+(m.nr||'')+'</span>'+(m.urg?'<span class="badge sm" data-urg="'+esc(m.urg)+'">'+esc(m.urg)+'</span>':'')+
-      '<span class="at">'+fmtTime(m.created)+'</span><span class="al">'+esc(ambLoc(m))+(m.mc?' &middot; '+esc(m.mc):'')+'</span>'+
+      '<span class="at">'+fmtTime(m.created)+'</span><span class="al">'+(discOf(m)==='ambulance'?'':'<b>'+esc(DISC[discOf(m)].name)+'</b> &middot; ')+esc(ambLoc(m))+(m.mc?' &middot; '+esc(m.mc):'')+'</span>'+
       '<span class="au">'+(m.units.length?m.units.map(esc).join(', '):'Nog geen eenheid gekoppeld')+'</span></button>';
-  }).join('')+'</div>':'<p class="m-none pb">Geen open ambulance-meldingen.</p>';
+  }).join('')+'</div>':'<p class="m-none pb">Geen open meldingen met eenheidsuitgifte.</p>';
   var mo=openMeldingen().sort(function(a,b){return (mel[b].created||0)-(mel[a].created||0);});
   var melList=mo.length?'<div class="arows">'+mo.map(function(k){
     var m=mel[k],n=unitsOf(k).length;
@@ -2003,25 +2133,32 @@ async function cacoAction(act,cid){
 function berBoard(){
   berSeen=Date.now();try{localStorage.setItem(LSS,''+berSeen);}catch(e){}
   var dis=canWrite?'':' disabled',ks=berList();
-  var form=isLead()?'<div class="apanel"><h3>Bericht versturen<small>intern kladblok</small></h3><div class="pb">'+
-    '<textarea class="field" id="berText" data-fk="bertext" maxlength="1000" placeholder="Bericht aan de meldkamers"'+dis+'>'+esc(berDraft)+'</textarea>'+
-    '<p class="m-none" style="margin:8px 0 0">Aan (niets aangevinkt = iedereen):</p><div class="calbtns">'+Object.keys(DN).map(function(t){return '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bd="'+t+'"'+(berAan.indexOf(t)>=0?' checked':'')+dis+'>'+DN[t]+'</label>';}).join('')+'</div>'+
+  var own={oc:'mk:oc',mka:'mk:mka',mkb:'mk:mkb',ovd:'rol:ovd',caco:'rol:caco'}[role.id],opts=BEROPT.filter(function(o){return o[0]!==own;}).concat(isLead()?Object.keys(DN).map(function(t){return [t,DN[t]+' (dienst)'];}):[]);
+  var form=berCanSend()?'<div class="apanel"><h3>Bericht versturen<small>aan meldkamers en leiding</small></h3><div class="pb">'+
+    '<textarea class="field" id="berText" data-fk="bertext" maxlength="1000" placeholder="Typ je bericht"'+dis+'>'+esc(berDraft)+'</textarea>'+
+    '<p class="m-none" style="margin:8px 0 0">Aan (niets aangevinkt = iedereen):</p><div class="calbtns">'+opts.map(function(o){return '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-bd="'+o[0]+'"'+(berAan.indexOf(o[0])>=0?' checked':'')+dis+'>'+esc(o[1])+'</label>';}).join('')+'</div>'+
     '<div class="calbtns"><button class="btn primary" data-ber="send"'+dis+'>Versturen</button></div></div></div>':'';
   var list='<div class="apanel"><h3>Berichten<small>'+ks.length+'</small></h3>'+(ks.length?'<div class="arows">'+ks.map(function(k){var m=ber[k];
-    return '<div class="arow-wrap"><div class="amb-row" style="cursor:default"><span class="at">'+fmtTime(m.t)+'</span><span class="al">'+esc(m.by)+' &rarr; '+(m.aan.length?m.aan.map(function(t){return DN[t]||t;}).join(', '):'iedereen')+'</span><span class="au" style="color:var(--ink);font-size:15px;white-space:pre-wrap">'+esc(m.text)+'</span></div>'+(isLead()?'<button class="btn sm danger" data-ber="del:'+esc(k)+'"'+dis+'>Wis</button>':'')+'</div>';
+    return '<div class="arow-wrap"><div class="amb-row" style="cursor:default"><span class="at">'+fmtTime(m.t)+'</span><span class="al">'+esc(m.by)+' &rarr; '+(m.aan.length?m.aan.map(berName).join(', '):'iedereen')+'</span><span class="au" style="color:var(--ink);font-size:15px;white-space:pre-wrap">'+esc(m.text)+'</span></div>'+(m.van&&BERBACK[m.van]&&m.van!==role.id&&berCanSend()?'<button class="btn sm" data-ber="reply:'+esc(k)+'"'+dis+'>Antwoord</button>':'')+(isLead()?'<button class="btn sm danger" data-ber="del:'+esc(k)+'"'+dis+'>Wis</button>':'')+'</div>';
   }).join('')+'</div>':'<p class="m-none pb">Nog geen berichten.</p>')+'</div>';
   return '<div style="max-width:760px;margin-top:14px">'+form+list+'</div>';
 }
 async function berAction(v){
-  if(!canWrite||!isLead())return;
+  if(!canWrite)return;
   try{
     if(v==='send'){
+      if(!berCanSend())return;
       var t=berDraft.trim();if(!t){toast('Typ eerst een bericht.');return;}
       var a=berAan.slice();berDraft='';berAan=[];
-      await writeBer(newCalId(),{text:t,t:Date.now(),by:role.name+(myName?' ('+myName+')':''),cid:CLIENT,aan:a});
+      await writeBer(newCalId(),{text:t,t:Date.now(),by:role.name+(myName?' ('+myName+')':''),cid:CLIENT,van:role.id,aan:a});
       toast('Bericht verstuurd');return;
     }
-    if(v.indexOf('del:')===0)await writeBer(v.slice(4),null);
+    if(v.indexOf('reply:')===0){
+      var rm=ber[v.slice(6)];if(!rm||!berCanSend())return;
+      var tk=BERBACK[rm.van];if(!tk)return;
+      berAan=[tk];renderBoard();var te=$('berText');if(te)te.focus();return;
+    }
+    if(v.indexOf('del:')===0&&isLead())await writeBer(v.slice(4),null);
   }catch(e){onWriteError(e);}
 
 }
@@ -2090,7 +2227,7 @@ function renderBoard(){
   if(ae&&ae.getAttribute&&$('board').contains(ae)&&ae.getAttribute('data-fk')){
     key={fk:ae.getAttribute('data-fk'),s:ae.selectionStart,e:ae.selectionEnd};
   }
-  var inner=(role&&role.id==='burger')?burgerScreen():(role&&role.id==='mkov')?mkScreen():(role&&role.id==='unit')?unitScreen():(tab==='meldingen')?meldingenBoard():(tab==='ambulance'?ambBoard():(tab==='caco'?cacoBoard():(tab==='ber'?berBoard():unitsBoard())));
+  var inner=(role&&role.id==='burger')?burgerScreen():(role&&role.id==='mkov')?mkScreen():(role&&role.id==='unit')?unitScreen():(tab==='meldingen')?meldingenBoard():((tab==='ambulance'||tab==='brandweer'||tab==='politie'||tab==='kmar')?ambBoard():(tab==='caco'?cacoBoard():(tab==='ber'?berBoard():unitsBoard())));
   $('board').innerHTML=(role&&role.id!=='unit'&&role.id!=='mkov'&&role.id!=='burger')?'<div class="mk-layout"><div class="mk-main">'+inner+'</div><aside class="mk-side">'+bgqHtml()+spraakHtml()+'</aside></div>':inner;
   bgTick();
   var hs=$('ambHist');if(hs)hs.scrollTop=hs.scrollHeight;
@@ -2730,7 +2867,7 @@ $('board').addEventListener('click',function(e){
     var gv=gt.getAttribute('data-goto');
     if(gv==='meldingen'){tab='meldingen';}
     else if(gv.indexOf('amb:')===0){
-      var gid=gv.slice(4),gm=amb[gid];tab='ambulance';
+      var gid=gv.slice(4),gm=amb[gid];tab=gm?DISC[discOf(gm)].tab:'ambulance';
       if(gm){ambSel=gid;af=ambBlank();AMB_F.forEach(function(k){af[k]=gm[k]||'';});ambCmdDraft='';}
     }
     render();return;
@@ -2819,7 +2956,7 @@ $('chips').addEventListener('click',function(e){
 });
 $('tabs').addEventListener('click',function(e){
   var b=e.target.closest('[data-t]');if(!b)return;
-  tab=b.getAttribute('data-t');if(tab==='ber'){berSeen=Date.now();try{localStorage.setItem(LSS,''+berSeen);}catch(e){}}renderTabs();renderSubs();renderChips();renderBoard();
+  var pdsc=ambDisc();tab=b.getAttribute('data-t');if(ambDisc()!==pdsc){ambSel=null;af=ambBlank();ambLinkDraft='';ambCmdDraft='';}if(tab==='ber'){berSeen=Date.now();try{localStorage.setItem(LSS,''+berSeen);}catch(e){}}renderTabs();renderSubs();renderChips();renderBoard();
 });
 $('subs').addEventListener('click',function(e){
   var b=e.target.closest('[data-sub]');if(!b)return;
@@ -2898,7 +3035,7 @@ async function init(){
     sbTried=true;
     try{
       var sm=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-      sbc=sm.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.key);authMode=REQUIRE_LOGIN;dbNs=sbAdapter(sbc);
+      sbc=sm.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.key);authMode=REQUIRE_LOGIN;dbNs=sbAdapter(sbc);window.GMS_SB=sbc;window.GMS_CFG={url:SUPABASE_CONFIG.url,key:SUPABASE_CONFIG.key};window.GMS_BRON='Systeem';window.GMS_CTX=function(){return role?role.name:'niet ingelogd';};
       sbc.auth.onAuthStateChange(function(ev,ses){try{sbc.realtime.setAuth(ses&&ses.access_token?ses.access_token:SUPABASE_CONFIG.key);}catch(e2){}});
     }catch(e){dbNs=null;}
   }
@@ -2996,6 +3133,57 @@ setInterval(bgTick,5000);
 $('maintGo').addEventListener('click',maintTry);
 $('maintPw').addEventListener('keydown',function(e){if(e.key==='Enter')maintTry();});
 init();
+})();
+</script>
+<script>
+(function(){
+var CF=window.GMS_CFG||{},KEY='gms-vragen-mine',LAST='gms-vragen-last',mine=[],cl=null,timer=null,cache={},BT=(window.GMS_BOTTOM||14)+'px';
+try{mine=JSON.parse(localStorage.getItem(KEY)||'[]')||[];}catch(e){}
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+var st=document.createElement('style');
+st.textContent='#gq-b{position:fixed;right:14px;z-index:1100;background:#0e9f8e;color:#fff;border:0;border-radius:99px;padding:10px 16px;font:600 14px system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}#gq-p{position:fixed;right:14px;z-index:1100;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:#0e232b;color:#e8f3f4;border:1px solid #1d4048;border-radius:12px;padding:14px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)}#gq-p[hidden],#gq-b[hidden]{display:none}.gq-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.gq-h button{background:none;border:0;color:inherit;font-size:22px;cursor:pointer}#gq-p label{display:block;margin-top:8px;font-size:12px;color:#9db5ba}#gq-p input,#gq-p select,#gq-p textarea{display:block;width:100%;margin-top:3px;background:#071217;color:#e8f3f4;border:1px solid #1d4048;border-radius:6px;padding:7px;font:inherit}#gq-s{margin-top:10px;width:100%;background:#0e9f8e;color:#fff;border:0;border-radius:6px;padding:9px;font:600 14px system-ui,sans-serif;cursor:pointer}#gq-s:disabled{opacity:.5}#gq-m{margin-top:8px;font-size:13px}#gq-m.e{color:#ff9a9a}#gq-m.o{color:#7ee2a0}#gq-l h4{margin:14px 0 6px;font-size:13px}.gq-q{border-top:1px solid #1d4048;padding:8px 0;font-size:13px}.gq-q small{display:block;color:#9db5ba}.gq-a{margin-top:4px;background:#12353f;padding:6px 8px;border-radius:6px}';
+document.head.appendChild(st);
+var b=document.createElement('button');b.id='gq-b';b.type='button';b.textContent='Vraag aan beheer';b.style.bottom=BT;
+var p=document.createElement('div');p.id='gq-p';p.hidden=true;p.style.bottom=BT;
+p.innerHTML='<div class="gq-h"><b>Vraag aan beheer</b><button type="button" id="gq-x" aria-label="Sluiten">\u00d7</button></div>'+
+'<label>Je naam (optioneel)<input id="gq-n" maxlength="60" autocomplete="off"></label>'+
+'<label>Onderwerp<select id="gq-o"><option>Anders</option><option>Inloggen en wachtwoord</option><option>Eenheden en status</option><option>Meldingen en uitgifte</option><option>Burgerscherm</option><option>Presentatie of handleiding</option></select></label>'+
+'<label>Je vraag<textarea id="gq-t" rows="4" maxlength="600"></textarea></label>'+
+'<div id="gq-m"></div><button type="button" id="gq-s">Verstuur</button><div id="gq-l"></div>';
+document.body.appendChild(b);document.body.appendChild(p);
+function $(i){return document.getElementById(i);}
+async function client(){if(window.GMS_SB)return window.GMS_SB;if(cl)return cl;var m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');cl=m.createClient(CF.url,CF.key);return cl;}
+function msg(t,x){var m=$('gq-m');m.className=t;m.textContent=x;}
+function draw(){
+  var ids=mine.filter(function(i){return cache[i];}).reverse();
+  $('gq-l').innerHTML=ids.length?'<h4>Jouw vragen</h4>'+ids.map(function(i){var d=cache[i];return '<div class="gq-q"><div>'+esc(d.tekst)+'</div><small>'+(d.status==='beantwoord'?'Beantwoord':'Wacht op antwoord')+'</small>'+(d.antwoord?'<div class="gq-a"><b>Antwoord:</b> '+esc(d.antwoord)+'</div>':'')+'</div>';}).join(''):'';
+}
+async function load(){
+  if(!mine.length){$('gq-l').innerHTML='';return;}
+  try{var c=await client();var r=await c.from('docs').select('id,data').eq('collection','vragen').in('id',mine);if(r.error)return;cache={};(r.data||[]).forEach(function(x){cache[x.id]=x.data;});draw();}catch(e){}
+}
+async function send(){
+  var t=$('gq-t').value.trim();
+  if(t.length<5)return msg('e','Typ eerst je vraag (minimaal 5 tekens).');
+  var last=0;try{last=+localStorage.getItem(LAST)||0;}catch(e){}
+  var w=Math.ceil((30000-(Date.now()-last))/1000);
+  if(w>0)return msg('e','Wacht nog '+w+' seconden voordat je nog een vraag stuurt.');
+  var open=mine.filter(function(i){return cache[i]&&cache[i].status!=='beantwoord';}).length;
+  if(open>=5)return msg('e','Je hebt al 5 onbeantwoorde vragen. Wacht op een antwoord.');
+  var id='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),ctx='';
+  try{ctx=typeof window.GMS_CTX==='function'?window.GMS_CTX():'';}catch(e){}
+  var rec={tekst:t.slice(0,600),naam:$('gq-n').value.trim().slice(0,60),onderwerp:$('gq-o').value,bron:(window.GMS_BRON||document.title)+(ctx?' ('+ctx+')':''),created:Date.now(),status:'open',antwoord:''};
+  $('gq-s').disabled=true;
+  try{
+    var c=await client();var r=await c.from('docs').upsert({collection:'vragen',id:id,data:rec});if(r.error)throw r.error;
+    mine.push(id);try{localStorage.setItem(KEY,JSON.stringify(mine.slice(-20)));localStorage.setItem(LAST,String(Date.now()));}catch(e){}
+    $('gq-t').value='';msg('o','Je vraag is verstuurd. Het antwoord van de beheerder verschijnt hieronder.');cache[id]=rec;draw();
+  }catch(e){var em=String((e&&e.message)||e);msg('e',/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder.':'Versturen is niet gelukt. Probeer het later opnieuw.');}
+  $('gq-s').disabled=false;
+}
+function openP(){p.hidden=false;b.hidden=true;load();clearInterval(timer);timer=setInterval(load,8000);$('gq-t').focus();}
+function closeP(){p.hidden=true;b.hidden=false;clearInterval(timer);}
+b.onclick=openP;$('gq-x').onclick=closeP;$('gq-s').onclick=send;
 })();
 </script>
 </body>
