@@ -61,7 +61,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 </head>
 <body>
 <header><div><small>GMS MELDKAMER</small><h1>Handleiding voor centralisten</h1><p>Zo werkt de meldkamer: van inloggen en het bord met eenheden tot de uitgifte van een ambulance, burgeraanvragen en calamiteiten.</p></div></header>
-<nav><div><a href="#start">Inloggen</a><a href="#bord">Het bord</a><a href="#uitgifte">Uitgifte ambulance</a><a href="#melding">Overige meldingen</a><a href="#burger">Burgeraanvragen</a><a href="#extra">Berichten en calamiteiten</a><a href="#leiding">CaCo en OvD-OC</a><a href="#tips">Tips</a></div></nav>
+<nav><div><a href="#start">Inloggen</a><a href="#bord">Het bord</a><a href="#uitgifte">Uitgifte ambulance</a><a href="#melding">Brandweer, politie, KMar</a><a href="#burger">Burgeraanvragen</a><a href="#extra">Berichten en calamiteiten</a><a href="#leiding">CaCo en OvD-OC</a><a href="#tips">Tips</a></div></nav>
 <main>
 
 <section id="start"><h2><b>1</b>Inloggen en werkplek kiezen</h2>
@@ -94,7 +94,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <p>Klik op een roepnummer om het paneel te openen. Met de <strong>cijfertoetsen 0 tot en met 9</strong> kies je snel een status. Je kunt een opmerking bij het nummer zetten, het nummer leegmaken of het roepnummer verwijderen, en met <em>Opslaan en volgende</em> ga je door naar de volgende eenheid.</p>
 <h3>Spraakaanvragen van eenheden</h3>
 <p>In de zijbalk staat de lijst <strong>Spraakaanvragen</strong>. De volgorde is vast: eerst de noodknop (0), dan urgent (7), dan spraak (6) en tot slot melding eigen initiatief (8).</p>
-<div class="tip">Brandweereenheden hebben een eigen paneel met tegels. <strong>Ingerukt</strong>, <strong>Beschikbaar</strong> en <strong>Op kazerne</strong> tellen alle drie als status 1. Op het bord zie je bij zo’n eenheid erbij welke tegel gekozen is, bijvoorbeeld “Inzetbaar · Op kazerne”.</div>
+<div class="tip">Brandweereenheden hebben een eigen paneel met tegels. <strong>Ingerukt</strong>, <strong>Beschikbaar</strong> en <strong>Op kazerne</strong> tellen alle drie als status 1. Op het bord zie je bij zo’n eenheid erbij welke tegel gekozen is, bijvoorbeeld “Inzetbaar · Op kazerne”. Onderaan het paneel staan ook <strong>Noodknop</strong>, <strong>Eigen melding</strong>, <strong>Informatie</strong> en <strong>Uitmelden</strong>.</div>
 </section>
 
 <section id="uitgifte"><h2><b>3</b>Uitgifte van een ambulance</h2>
@@ -118,16 +118,22 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <p>Je kunt onderaan de kaart ook een <strong>intern kladblok</strong> gebruiken of een commando typen, bijvoorbeeld <code>-GH</code>, en op <em>Toevoegen</em> klikken. Dat komt in de historie.</p>
 </section>
 
-<section id="melding"><h2><b>4</b>Overige meldingen (politie, KMar, brandweer)</h2>
-<p class="lead">Voor alles buiten de ambulance gebruik je de tab <strong>Meldingen</strong>.</p>
+<section id="melding"><h2><b>4</b>Meldingen voor brandweer, politie en KMar</h2>
+<p class="lead">Brandweer, politie en KMar werken met hetzelfde meldingsysteem als de ambulance: een incidentkaart, een lijst “wachtend op uitgifte” en een inzetvoorstel. Politie en KMar delen hun meldingen. Je ziet dezelfde meldingen in beide tabs.</p>
 <ol class="steps">
-<li><b>Melding toevoegen</b>Typ een titel en voeg de melding toe, of maak er een aan bij een roepnummer.</li>
-<li><b>Eenheden koppelen</b>Koppel roepnummers aan de melding. Ze gaan automatisch naar status 2 (Aanrijdend), tenzij je zelf een andere status kiest.</li>
-<li><b>Notities bijhouden</b>Notities bij de melding zijn gedeeld met alle eenheden die eraan gekoppeld zijn.</li>
-<li><b>Afronden</b>Het systeem laat zien hoeveel eenheden eraan hangen en dat die <strong>automatisch naar status 1</strong> gaan. Eenheden op status 0 (noodknop) en 5 (uitmelden) houden hun status. De notities blijven bewaard onder <em>Afgerond</em>.</li>
+<li><b>Nieuwe melding</b>Open de tab van je dienst (Brandweer, Politie of KMar) en vul de incidentkaart in, of kies een snelle term, bijvoorbeeld <em>Brand woning</em> of <em>Inbraak op heterdaad</em>. De prioriteit (P1 tot en met P3, bij politie ook P4) wordt dan meteen ingevuld.</li>
+<li><b>Opslaan</b>De melding komt onder <em>Openstaande incidenten</em>, wachtend op uitgifte.</li>
+<li><b>Inzetvoorstel bekijken</b>Het systeem stelt de handigste eenheid voor, afhankelijk van de soort melding (zie hieronder).</li>
+<li><b>Alarmeren</b>Klik <em>Alarmeer</em>. De eenheid wordt gekoppeld en gaat naar <strong>status 2 (Aanrijdend)</strong>. Een eenheid die al bij een andere melding hoort, wordt niet nog eens voorgesteld.</li>
+<li><b>Tijden en historie</b>Je legt per eenheid <em>Uit</em>, <em>Terp</em> en <em>Vrij</em> vast. Alles komt in de historie.</li>
+<li><b>Afronden</b>Klik <em>Sluit incident</em>. De eenheden behouden hun status, dus zet ze zelf terug op status 1 als ze weer beschikbaar zijn.</li>
 </ol>
-<div class="flow"><span>Toevoegen</span><i>›</i><span>Koppelen</span><i>›</i><span>Notities</span><i>›</i><span>Afronden</span></div>
-<p>Een afgeronde melding kun je <em>heropenen</em> of <em>verwijderen</em>. Verwijderen is definitief.</p>
+<div class="grid">
+<div class="card"><h3>Voorstel brandweer</h3><p>Het type voertuig past bij de melding. Bij een brand in een woning: een <strong>tankautospuit</strong>, een <strong>hoogwerker</strong> en bij P1 ook een <strong>officier van dienst</strong>. Bij een natuurbrand een terreinvaardige tankautospuit, bij een waterongeval het waterongevallenvoertuig. Per type komt de <strong>dichtstbijzijnde beschikbare kazerne</strong> bovenaan, met de afstand in km.</p></div>
+<div class="card"><h3>Voorstel politie en KMar</h3><p>Het type eenheid past bij de melding: bij geweld of een inbraak op heterdaad <strong>Noodhulp</strong>, bij een verkeersongeval <strong>Team verkeer</strong>, bij vermissing een <strong>hondeleider</strong>, bij overlast de <strong>wijkagent</strong>. Politie-eenheden hebben geen standplaats, dus er zijn geen afstanden. <strong>KMar</strong> staat voorop bij grens- of luchthavenmeldingen en anders achteraan. Hangen er <strong>meer dan 3 politie-eenheden</strong> aan de melding, dan wordt ook een <strong>OVD-P</strong> voorgesteld.</p></div>
+</div>
+<div class="tip">Alleen eenheden met status 1 of 4 worden voorgesteld. Een eenheid op status 2 of 3, of die al aan een andere melding hangt, ontbreekt dus. Je kunt altijd zelf een eenheid koppelen.</div>
+<p>De tab <strong>Meldingen</strong> blijft bestaan voor losse meldingen zonder incidentkaart. Daar werk je met een titel, notities en gekoppelde eenheden.</p>
 </section>
 
 <section id="burger"><h2><b>5</b>Burgeraanvragen</h2>
@@ -153,7 +159,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 
 <section id="extra"><h2><b>6</b>Berichten, kladblok en logboek</h2>
 <div class="grid">
-<div class="card"><h3>Berichten</h3><p>In de tab <em>Berichten</em> verstuur je een bericht naar de andere meldkamers. Je ziet de berichten die zijn verstuurd.</p></div>
+<div class="card"><h3>Berichten</h3><p>In de tab <em>Berichten</em> stuur je een bericht aan <strong>OC/OPS, MKA, AC/MKB, OvD-OC en CaCo</strong>, of aan iedereen als je niets aanvinkt. Een bericht aan alleen OvD-OC of alleen CaCo is privé voor die rol. Met <em>Antwoord</em> reageer je meteen op de afzender. Een nieuw bericht geeft een geluid en een melding in beeld.</p></div>
 <div class="card"><h3>Intern kladblok</h3><p>Je kunt een intern kladblok gebruiken voor eigen aantekeningen die geen melding zijn.</p></div>
 <div class="card"><h3>Logboek</h3><p>Belangrijke gebeurtenissen en wijzigingen worden automatisch vastgelegd. Zo kan achteraf iedereen nalezen wat er is gebeurd.</p></div>
 </div>
@@ -180,5 +186,57 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 </section>
 </main>
 <footer>Handleiding GMS Meldkamer · alleen voor oefendoeleinden</footer>
+<script>window.GMS_CFG={url:'https://amytotkfjihycrdmlxdp.supabase.co',key:'sb_publishable_bztsVfpk9adjtlQsr213rQ_4QMlQxrW'};window.GMS_BRON='Handleiding';</script>
+<script>
+(function(){
+var CF=window.GMS_CFG||{},KEY='gms-vragen-mine',LAST='gms-vragen-last',mine=[],cl=null,timer=null,cache={},BT=(window.GMS_BOTTOM||14)+'px';
+try{mine=JSON.parse(localStorage.getItem(KEY)||'[]')||[];}catch(e){}
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+var st=document.createElement('style');
+st.textContent='#gq-b{position:fixed;right:14px;z-index:1100;background:#0e9f8e;color:#fff;border:0;border-radius:99px;padding:10px 16px;font:600 14px system-ui,sans-serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}#gq-p{position:fixed;right:14px;z-index:1100;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:#0e232b;color:#e8f3f4;border:1px solid #1d4048;border-radius:12px;padding:14px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5)}#gq-p[hidden],#gq-b[hidden]{display:none}.gq-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.gq-h button{background:none;border:0;color:inherit;font-size:22px;cursor:pointer}#gq-p label{display:block;margin-top:8px;font-size:12px;color:#9db5ba}#gq-p input,#gq-p select,#gq-p textarea{display:block;width:100%;margin-top:3px;background:#071217;color:#e8f3f4;border:1px solid #1d4048;border-radius:6px;padding:7px;font:inherit}#gq-s{margin-top:10px;width:100%;background:#0e9f8e;color:#fff;border:0;border-radius:6px;padding:9px;font:600 14px system-ui,sans-serif;cursor:pointer}#gq-s:disabled{opacity:.5}#gq-m{margin-top:8px;font-size:13px}#gq-m.e{color:#ff9a9a}#gq-m.o{color:#7ee2a0}#gq-l h4{margin:14px 0 6px;font-size:13px}.gq-q{border-top:1px solid #1d4048;padding:8px 0;font-size:13px}.gq-q small{display:block;color:#9db5ba}.gq-a{margin-top:4px;background:#12353f;padding:6px 8px;border-radius:6px}';
+document.head.appendChild(st);
+var b=document.createElement('button');b.id='gq-b';b.type='button';b.textContent='Vraag aan beheer';b.style.bottom=BT;
+var p=document.createElement('div');p.id='gq-p';p.hidden=true;p.style.bottom=BT;
+p.innerHTML='<div class="gq-h"><b>Vraag aan beheer</b><button type="button" id="gq-x" aria-label="Sluiten">\u00d7</button></div>'+
+'<label>Je naam (optioneel)<input id="gq-n" maxlength="60" autocomplete="off"></label>'+
+'<label>Onderwerp<select id="gq-o"><option>Anders</option><option>Inloggen en wachtwoord</option><option>Eenheden en status</option><option>Meldingen en uitgifte</option><option>Burgerscherm</option><option>Presentatie of handleiding</option></select></label>'+
+'<label>Je vraag<textarea id="gq-t" rows="4" maxlength="600"></textarea></label>'+
+'<div id="gq-m"></div><button type="button" id="gq-s">Verstuur</button><div id="gq-l"></div>';
+document.body.appendChild(b);document.body.appendChild(p);
+function $(i){return document.getElementById(i);}
+async function client(){if(window.GMS_SB)return window.GMS_SB;if(cl)return cl;var m=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');cl=m.createClient(CF.url,CF.key);return cl;}
+function msg(t,x){var m=$('gq-m');m.className=t;m.textContent=x;}
+function draw(){
+  var ids=mine.filter(function(i){return cache[i];}).reverse();
+  $('gq-l').innerHTML=ids.length?'<h4>Jouw vragen</h4>'+ids.map(function(i){var d=cache[i];return '<div class="gq-q"><div>'+esc(d.tekst)+'</div><small>'+(d.status==='beantwoord'?'Beantwoord':'Wacht op antwoord')+'</small>'+(d.antwoord?'<div class="gq-a"><b>Antwoord:</b> '+esc(d.antwoord)+'</div>':'')+'</div>';}).join(''):'';
+}
+async function load(){
+  if(!mine.length){$('gq-l').innerHTML='';return;}
+  try{var c=await client();var r=await c.from('docs').select('id,data').eq('collection','vragen').in('id',mine);if(r.error)return;cache={};(r.data||[]).forEach(function(x){cache[x.id]=x.data;});draw();}catch(e){}
+}
+async function send(){
+  var t=$('gq-t').value.trim();
+  if(t.length<5)return msg('e','Typ eerst je vraag (minimaal 5 tekens).');
+  var last=0;try{last=+localStorage.getItem(LAST)||0;}catch(e){}
+  var w=Math.ceil((30000-(Date.now()-last))/1000);
+  if(w>0)return msg('e','Wacht nog '+w+' seconden voordat je nog een vraag stuurt.');
+  var open=mine.filter(function(i){return cache[i]&&cache[i].status!=='beantwoord';}).length;
+  if(open>=5)return msg('e','Je hebt al 5 onbeantwoorde vragen. Wacht op een antwoord.');
+  var id='v'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),ctx='';
+  try{ctx=typeof window.GMS_CTX==='function'?window.GMS_CTX():'';}catch(e){}
+  var rec={tekst:t.slice(0,600),naam:$('gq-n').value.trim().slice(0,60),onderwerp:$('gq-o').value,bron:(window.GMS_BRON||document.title)+(ctx?' ('+ctx+')':''),created:Date.now(),status:'open',antwoord:''};
+  $('gq-s').disabled=true;
+  try{
+    var c=await client();var r=await c.from('docs').upsert({collection:'vragen',id:id,data:rec});if(r.error)throw r.error;
+    mine.push(id);try{localStorage.setItem(KEY,JSON.stringify(mine.slice(-20)));localStorage.setItem(LAST,String(Date.now()));}catch(e){}
+    $('gq-t').value='';msg('o','Je vraag is verstuurd. Het antwoord van de beheerder verschijnt hieronder.');cache[id]=rec;draw();
+  }catch(e){var em=String((e&&e.message)||e);msg('e',/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder.':'Versturen is niet gelukt. Probeer het later opnieuw.');}
+  $('gq-s').disabled=false;
+}
+function openP(){p.hidden=false;b.hidden=true;load();clearInterval(timer);timer=setInterval(load,8000);$('gq-t').focus();}
+function closeP(){p.hidden=true;b.hidden=false;clearInterval(timer);}
+b.onclick=openP;$('gq-x').onclick=closeP;$('gq-s').onclick=send;
+})();
+</script>
 </body>
 </html>
