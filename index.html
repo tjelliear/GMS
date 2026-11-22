@@ -1799,11 +1799,11 @@ function incPropHtml(d){
   if(d==='brandweer'){
     var pl=String(af.plaats||'').trim(),g=ambGeo(pl);
     if(!mc)html+='<p class="m-none" style="margin:0 0 6px">Kies een snelle term (bijvoorbeeld Brand woning) of vul de soort melding in voor een gericht voorstel.</p>';
-    if(!g)html+='<p class="m-none" style="margin:0 0 6px">'+(pl?'Plaats '+esc(pl)+' staat niet in de plaatsenlijst: geen afstanden.':'Vul bij Plaats de plaats in voor afstanden vanaf de kazerne.')+'</p>';
+    if(!g)html+='<p class="m-none" style="margin:0 0 6px">'+(pl?(plaatsOk(pl)?'Voor '+esc(pl)+' zijn geen co\u00f6rdinaten ingesteld (beheer): geen afstanden.':'Plaats '+esc(pl)+' staat niet in de plaatsenlijst: geen afstanden.'):'Kies bij Plaats de plaats van de melding voor afstanden vanaf de kazerne.')+'</p>';
     var used={};
     bwNeeds(mc,urg).forEach(function(k){
       var r=BW_ROLES.filter(function(x){return x.k===k;})[0];
-      var c=ORDER.filter(function(id){var l=UNITS[id].label||'';return tabIs(id,'brandweer')&&r.re.test(l)&&!(r.not&&r.not.test(l))&&avail(id)&&!used[id];}).map(function(id){var pk=kazPlace(id),gg=pk?AMB_GEO[pk]:null;return {id:id,km:(g&&gg)?ambKm(g,gg):null};});
+      var c=ORDER.filter(function(id){var l=UNITS[id].label||'';return tabIs(id,'brandweer')&&r.re.test(l)&&!(r.not&&r.not.test(l))&&avail(id)&&!used[id];}).map(function(id){var pk=kazPlace(id),gg=pk?ambGeo(pk):null;return {id:id,km:(g&&gg)?ambKm(g,gg):null};});
       c.sort(function(a,b){var ka=a.km==null?1e9:a.km,kb=b.km==null?1e9:b.km;return (ka-kb)||(rank(a.id)-rank(b.id));});
       html+='<p style="'+sub+'"><b>'+esc(r.n)+'</b></p>'+(c.length?c.slice(0,2).map(function(x,i){if(i===0)used[x.id]=1;return incRow(x.id,i,(UNITS[x.id].label||'')+' \u00b7 '+UNITS[x.id].group.name,x.km);}).join(''):'<p class="m-none" style="margin:0">Geen beschikbare eenheid van dit type.</p>');
     });
@@ -1857,12 +1857,6 @@ function ambRow(id){
   '</button>';
 }
 function ambRank(st){var r={'1':0,'4':1,'uit':2,'5':3,'2':4,'3':5};return st in r?r[st]:6;}
-function ambPlaatsen(){
-  if(ambDisc()!=='ambulance')return Object.keys(AMB_GEO).map(function(k){return k.replace(/(^|[ -])(\w)/g,function(m,a,b){return a+b.toUpperCase();});}).sort();
-  var seen={},out=[];
-  ORDER.forEach(function(id){var u=UNITS[id];if(u.group.name===AMB_GROUP&&u.label&&!seen[u.label]){seen[u.label]=1;out.push(u.label);}});
-  return out.sort();
-}
 var AMB_GEO={
   arnhem:[51.985,5.899],barneveld:[52.140,5.587],dieren:[52.050,6.098],ede:[52.040,5.666],elst:[51.921,5.846],
   renkum:[51.977,5.739],terschuur:[52.165,5.510],zevenaar:[51.927,6.071],velp:[51.999,5.979],rheden:[52.005,6.030],
@@ -1874,7 +1868,34 @@ var AMB_GEO={
   driel:[51.961,5.786],hoevelaken:[52.167,5.467],putten:[52.257,5.608],ermelo:[52.299,5.620],harskamp:[52.119,5.793],
   wekerom:[52.116,5.700],ederveen:[52.058,5.616]
 };
-function ambGeo(n){return AMB_GEO[String(n||'').trim().toLowerCase()]||null;}
+/* Plaatsen waaruit bij een melding gekozen kan worden (aanpasbaar in beheer): naam;land;breedtegraad;lengtegraad */
+var PLAATS_DEF="Zevenaar;NL;51.927;6.071\nBabberich;NL;51.918;6.117\nGroot-Holthuizen;NL;51.912;6.090\nDidam;NL;51.941;6.125\nFeldhuisen;DU;;\nElten;DU;51.877;6.153";
+function parsePlaatsen(t){
+  var r=[];String(t||'').split('\n').forEach(function(l){
+    l=l.replace(/#.*$/,'').trim();if(!l)return;
+    var q=l.split(';').map(function(x){return x.trim();});if(!q[0])return;
+    var la=parseFloat(String(q[2]||'').replace(',','.')),lo=parseFloat(String(q[3]||'').replace(',','.'));
+    r.push({n:q[0],land:(q[1]||'NL').toUpperCase(),ll:(isFinite(la)&&isFinite(lo))?[la,lo]:null});
+  });
+  return r;
+}
+var PLAATSEN_OK=parsePlaatsen(PLAATS_DEF);
+function plaatsOk(n){var k=String(n||'').trim().toLowerCase();return PLAATSEN_OK.some(function(p){return p.n.toLowerCase()===k;});}
+function ambGeo(n){
+  var k=String(n||'').trim().toLowerCase(),p=PLAATSEN_OK.filter(function(x){return x.n.toLowerCase()===k;})[0];
+  if(p&&p.ll)return p.ll;
+  return AMB_GEO[k]||null;
+}
+var LANDNM={NL:'Nederland',DU:'Duitsland',DE:'Duitsland'};
+function plaatsSelectHtml(){
+  var cur=String(af.plaats||'').trim(),found=plaatsOk(cur),lands=[];
+  PLAATSEN_OK.forEach(function(p){if(lands.indexOf(p.land)<0)lands.push(p.land);});
+  var opts='<option value="">&mdash; kies &mdash;</option>'+((cur&&!found)?'<option value="'+esc(cur)+'" selected>'+esc(cur)+' (niet in lijst)</option>':'');
+  lands.forEach(function(l){
+    opts+='<optgroup label="'+esc(LANDNM[l]||l)+'">'+PLAATSEN_OK.filter(function(p){return p.land===l;}).map(function(p){return '<option value="'+esc(p.n)+'"'+((found&&p.n.toLowerCase()===cur.toLowerCase())?' selected':'')+'>'+esc(p.n)+'</option>';}).join('')+'</optgroup>';
+  });
+  return '<label class="c4"><span>Plaats</span><select class="field" data-fk="af:plaats" data-af="plaats"'+(canWrite?'':' disabled')+'>'+opts+'</select></label>';
+}
 function ambKm(a,b){
   var r=Math.PI/180,dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r;
   var x=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)*Math.sin(dn/2);
@@ -1985,11 +2006,11 @@ function ambBoard(){
         ambField('mc',C.mcL,'c4','maxlength="80"')+urgSel+
         ambField('melder','Melder','c4','maxlength="80"')+ambField('tel','Tel.','c2','maxlength="30" inputmode="tel"')+
         ambField('straat','Straat','c4','maxlength="80"')+ambField('huisnr','Nr.','c2','maxlength="12"')+
-        ambField('plaats','Plaats','c4','maxlength="60" list="ambPlaatsen"')+ambField('postcode','Postcode','c2','maxlength="8"')+
+        plaatsSelectHtml()+ambField('postcode','Postcode','c2','maxlength="8"')+
         ambField('bijz','Bijzonderheden','c6','maxlength="200"')+
         (C.best?ambField('best','Bestemming','c6','maxlength="100" placeholder="Nog niet vastgelegd"'):'')+
       '</div>'+
-      '<datalist id="ambPlaatsen">'+ambPlaatsen().map(function(x){return '<option value="'+esc(x)+'"></option>';}).join('')+'</datalist>'+
+      
       ambLinksHtml(cur)+'<div class="abtns"><button class="btn primary" data-aa="save"'+dis+'>Opslaan</button>'+
         '<button class="btn" data-aa="new">Nieuwe melding</button>'+
         '<button class="btn danger" data-aa="close"'+(canWrite&&cur?'':' disabled')+'>Sluit incident</button>'+(isLead()&&cur?'<button class="btn" data-aa="'+(cur.ovn?'give':'take')+'">'+(cur.ovn?'Teruggeven':'Overnemen')+'</button>':'')+'<span class="esc"><select class="field" data-esc="1" data-fk="esc" aria-label="Opschalen naar">'+Object.keys(DISC).filter(function(k){return k!==D;}).map(function(k){return '<option value="'+k+'"'+(escTo===k?' selected':'')+'>'+(DISC[k].name==='AMB'?'Ambulance':DISC[k].name)+'</option>';}).join('')+'</select><button class="btn" data-aa="escalate"'+(canWrite?'':' disabled')+'>Opschalen</button></span></div>'+
@@ -2009,6 +2030,8 @@ async function ambSave(mut){
   var cur=ambCur();
   var has=AMB_F.some(function(k){return String(af[k]||'').trim();});
   if(!cur&&!has){toast('Vul eerst gegevens in.');return null;}
+  var plk=String(af.plaats||'').trim();
+  if(plk&&!plaatsOk(plk)&&!(cur&&String(cur.plaats||'').trim()===plk)){toast('Kies een plaats uit de lijst.');return null;}
   var rec,id,prevSel=ambSel;
   if(cur){rec=Object.assign({},cur);rec.log=(cur.log||[]).slice();id=ambSel;}
   else{
@@ -3186,7 +3209,7 @@ async function init(){
       if(ambSel&&!amb[ambSel]){ambSel=null;}
       render();
     },fail);
-    db.collection('instellingen').onSnapshot(function(snap){var seenM=false,seenP=false,seenS=false;snap.docs.forEach(function(d){if(d.id==='standplaatsen'){seenS=true;POL_RULES=parsePlaatsRules((d.data()||{}).tekst);}if(d.id==='onderdelen'){seenP=true;var pd=d.data()||{};PART={};PART_KEYS.forEach(function(k){var x=pd[k]||{};PART[k]={uit:!!x.uit,zonderww:!!x.zonderww};});}if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenM)maintOn=false;if(!seenP)PART={};if(!seenS)POL_RULES=[];renderMaint();render();enforceParts();},function(){});
+    db.collection('instellingen').onSnapshot(function(snap){var seenM=false,seenP=false,seenS=false,seenL=false;snap.docs.forEach(function(d){if(d.id==='plaatsen'){seenL=true;var pp=parsePlaatsen((d.data()||{}).tekst);if(pp.length)PLAATSEN_OK=pp;}if(d.id==='standplaatsen'){seenS=true;POL_RULES=parsePlaatsRules((d.data()||{}).tekst);}if(d.id==='onderdelen'){seenP=true;var pd=d.data()||{};PART={};PART_KEYS.forEach(function(k){var x=pd[k]||{};PART[k]={uit:!!x.uit,zonderww:!!x.zonderww};});}if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenM)maintOn=false;if(!seenP)PART={};if(!seenS)POL_RULES=[];if(!seenL)PLAATSEN_OK=parsePlaatsen(PLAATS_DEF);renderMaint();render();enforceParts();},function(){});
     CUSTOM_SECS.forEach(function(sec){
       db.collection(sec.id).onSnapshot(function(snap){
         var nd={};
