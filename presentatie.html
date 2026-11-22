@@ -64,7 +64,7 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 <section class="slide"><h2>Meldingen: brandweer, politie en KMar</h2><p class="m">Zelfde systeem als de ambulance. Politie en KMar delen hun meldingen.</p>
 <div class="flow"><span>Nieuwe melding</span><i>›</i><span>Inzetvoorstel</span><i>›</i><span>Alarmeer</span><i>›</i><span>Sluit incident</span></div>
 <div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Brandweer</b><small>Type voertuig past bij de melding, bijvoorbeeld tankautospuit en hoogwerker. Dichtstbijzijnde kazerne bovenaan, met km.</small></div><div class="c"><b>Politie en KMar</b><small>Type eenheid past bij de melding, zoals Noodhulp of Team verkeer. KMar voorop bij grens en luchthaven.</small></div></div>
-<p class="m">Alleen eenheden met status 1 of 4 worden voorgesteld. Alarmeren zet de eenheid op status 2.</p></section>
+<p class="m">Zoek in alle LMC-classificaties en parsertermen, met beschrijving en standaardprioriteit. Alleen eenheden met status 1 of 4 worden voorgesteld. Nodig je ook een andere dienst? Met Opschalen maak je daar een gekoppelde melding.</p></section>
 
 <section class="slide"><h2>Burgeraanvragen</h2><p class="m">In de zijbalk, altijd op prioriteit, met de wachttijd.</p>
 <div style="display:grid;gap:.8cqw">
@@ -156,7 +156,7 @@ async function send(){
     var c=await client();var r=await c.from('docs').upsert({collection:'vragen',id:id,data:rec});if(r.error)throw r.error;
     mine.push(id);try{localStorage.setItem(KEY,JSON.stringify(mine.slice(-20)));localStorage.setItem(LAST,String(Date.now()));}catch(e){}
     $('gq-t').value='';msg('o','Je vraag is verstuurd. Het antwoord van de beheerder verschijnt hieronder.');cache[id]=rec;draw();
-  }catch(e){var em=String((e&&e.message)||e);msg('e',/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder.':'Versturen is niet gelukt. Probeer het later opnieuw.');}
+  }catch(e){var em=String((e&&e.message)||e);console.error('Vraag versturen mislukt:',em);msg('e',(/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder (Vragen, Test verbinding).':'Versturen is niet gelukt. Probeer het later opnieuw.')+' ['+em.slice(0,140)+']');}
   $('gq-s').disabled=false;
 }
 function openP(){p.hidden=false;b.hidden=true;load();clearInterval(timer);timer=setInterval(load,8000);$('gq-t').focus();}
