@@ -121,16 +121,17 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <section id="melding"><h2><b>4</b>Meldingen voor brandweer, politie en KMar</h2>
 <p class="lead">Brandweer, politie en KMar werken met hetzelfde meldingsysteem als de ambulance: een incidentkaart, een lijst “wachtend op uitgifte” en een inzetvoorstel. Politie en KMar delen hun meldingen. Je ziet dezelfde meldingen in beide tabs.</p>
 <ol class="steps">
-<li><b>Nieuwe melding</b>Open de tab van je dienst (Brandweer, Politie of KMar) en vul de incidentkaart in, of kies een snelle term, bijvoorbeeld <em>Brand woning</em> of <em>Inbraak op heterdaad</em>. De prioriteit (P1 tot en met P3, bij politie ook P4) wordt dan meteen ingevuld.</li>
+<li><b>Nieuwe melding</b>Open de tab van je dienst (Brandweer, Politie of KMar). Zoek in het zoekvak op naam, parserterm of omschrijving: alle meldingsclassificaties en parsertermen van de LMC 12.0 zitten erin, ook alternatieve termen zoals <em>-brand aanleunwoning</em>. Bij een keuze zie je de beschrijving van de classificatie. De standaardprioriteit uit de LMC wordt meteen ingevuld (P1 tot en met P3 bij brandweer, P1 tot en met P5 bij politie). Je kunt ook een parserterm intypen als commando, bijvoorbeeld <code>-brand woning</code>.</li>
 <li><b>Opslaan</b>De melding komt onder <em>Openstaande incidenten</em>, wachtend op uitgifte.</li>
 <li><b>Inzetvoorstel bekijken</b>Het systeem stelt de handigste eenheid voor, afhankelijk van de soort melding (zie hieronder).</li>
 <li><b>Alarmeren</b>Klik <em>Alarmeer</em>. De eenheid wordt gekoppeld en gaat naar <strong>status 2 (Aanrijdend)</strong>. Een eenheid die al bij een andere melding hoort, wordt niet nog eens voorgesteld.</li>
+<li><b>Opschalen</b>Heb je ook een andere dienst nodig, bijvoorbeeld een ambulance bij een verkeersongeval? Kies onder de incidentkaart de dienst en klik <em>Opschalen</em>. Er komt een nieuwe melding bij die dienst met het adres en de melder, en beide meldingen verwijzen naar elkaar. De andere dienst vult zelf de classificatie in.</li>
 <li><b>Tijden en historie</b>Je legt per eenheid <em>Uit</em>, <em>Terp</em> en <em>Vrij</em> vast. Alles komt in de historie.</li>
 <li><b>Afronden</b>Klik <em>Sluit incident</em>. De eenheden behouden hun status, dus zet ze zelf terug op status 1 als ze weer beschikbaar zijn.</li>
 </ol>
 <div class="grid">
 <div class="card"><h3>Voorstel brandweer</h3><p>Het type voertuig past bij de melding. Bij een brand in een woning: een <strong>tankautospuit</strong>, een <strong>hoogwerker</strong> en bij P1 ook een <strong>officier van dienst</strong>. Bij een natuurbrand een terreinvaardige tankautospuit, bij een waterongeval het waterongevallenvoertuig. Per type komt de <strong>dichtstbijzijnde beschikbare kazerne</strong> bovenaan, met de afstand in km.</p></div>
-<div class="card"><h3>Voorstel politie en KMar</h3><p>Het type eenheid past bij de melding: bij geweld of een inbraak op heterdaad <strong>Noodhulp</strong>, bij een verkeersongeval <strong>Team verkeer</strong>, bij vermissing een <strong>hondeleider</strong>, bij overlast de <strong>wijkagent</strong>. Politie-eenheden hebben geen standplaats, dus er zijn geen afstanden. <strong>KMar</strong> staat voorop bij grens- of luchthavenmeldingen en anders achteraan. Hangen er <strong>meer dan 3 politie-eenheden</strong> aan de melding, dan wordt ook een <strong>OVD-P</strong> voorgesteld.</p></div>
+<div class="card"><h3>Voorstel politie en KMar</h3><p>Het type eenheid past bij de melding: bij geweld of een inbraak op heterdaad <strong>Noodhulp</strong>, bij een verkeersongeval <strong>Team verkeer</strong>, bij vermissing een <strong>hondeleider</strong>, bij overlast de <strong>wijkagent</strong>. Heeft de beheerder voor eenheden een <strong>standplaats</strong> ingesteld, dan staat de dichtstbijzijnde eenheid van het passende type bovenaan, met de afstand in km. Zonder standplaats kiest het voorstel alleen op type en beschikbaarheid. <strong>KMar</strong> staat voorop bij grens- of luchthavenmeldingen en anders achteraan. Hangen er <strong>meer dan 3 politie-eenheden</strong> aan de melding, dan wordt ook een <strong>OVD-P</strong> voorgesteld.</p></div>
 </div>
 <div class="tip">Alleen eenheden met status 1 of 4 worden voorgesteld. Een eenheid op status 2 of 3, of die al aan een andere melding hangt, ontbreekt dus. Je kunt altijd zelf een eenheid koppelen.</div>
 <p>De tab <strong>Meldingen</strong> blijft bestaan voor losse meldingen zonder incidentkaart. Daar werk je met een titel, notities en gekoppelde eenheden.</p>
@@ -230,7 +231,7 @@ async function send(){
     var c=await client();var r=await c.from('docs').upsert({collection:'vragen',id:id,data:rec});if(r.error)throw r.error;
     mine.push(id);try{localStorage.setItem(KEY,JSON.stringify(mine.slice(-20)));localStorage.setItem(LAST,String(Date.now()));}catch(e){}
     $('gq-t').value='';msg('o','Je vraag is verstuurd. Het antwoord van de beheerder verschijnt hieronder.');cache[id]=rec;draw();
-  }catch(e){var em=String((e&&e.message)||e);msg('e',/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder.':'Versturen is niet gelukt. Probeer het later opnieuw.');}
+  }catch(e){var em=String((e&&e.message)||e);console.error('Vraag versturen mislukt:',em);msg('e',(/row-level|policy|permission/i.test(em)?'Versturen is niet gelukt: de database staat dit nog niet toe. Meld het aan de beheerder (Vragen, Test verbinding).':'Versturen is niet gelukt. Probeer het later opnieuw.')+' ['+em.slice(0,140)+']');}
   $('gq-s').disabled=false;
 }
 function openP(){p.hidden=false;b.hidden=true;load();clearInterval(timer);timer=setInterval(load,8000);$('gq-t').focus();}
