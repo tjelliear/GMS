@@ -175,7 +175,7 @@ dialog .row{display:flex;justify-content:flex-end;gap:8px}
 [data-urg="B1"]{--c:var(--s2)} [data-urg="B2"]{--c:var(--s6)}
 [data-urg="C1"]{--c:var(--s1)} [data-urg="C2"]{--c:var(--s5)}
 [data-urg="P1"]{--c:var(--s0)} [data-urg="P2"]{--c:var(--s7)} [data-urg="P3"]{--c:var(--s2)} [data-urg="P4"]{--c:var(--s5)} [data-urg="P5"]{--c:var(--s5)}
-.alinks{margin:6px 0;font-size:13px}.esc{display:inline-flex;gap:6px;margin-left:auto}.esc select{width:auto}
+.alinks{margin:6px 0;font-size:13px}.bgr-a select{width:auto;padding:2px 6px;font-size:13px}.esc{display:inline-flex;gap:6px;margin-left:auto}.esc select{width:auto}
 .mcinfo{background:rgba(45,212,191,.1);border-radius:8px;padding:8px 10px;margin:8px 0;font-size:13px}.mcinfo p{margin:4px 0 0;opacity:.85}.mcinfo small{opacity:.75}
 .amb-row[data-urg]{border-left-color:var(--c)}
 .apanel[data-urg]{border-top:5px solid var(--c)}
@@ -458,7 +458,7 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
     </div>
     <h3>Namen</h3>
     <div id="pNames"></div>
-    <h3>Melding</h3>
+    <h3 id="pMelH">Melding</h3>
     <select class="field" id="pMel" aria-label="Melding"></select>
     <p class="hint" id="pMelHint">Koppelen zet het nummer automatisch op Status 2 (Aanrijdend), tenzij je zelf een andere status kiest.</p>
     <input class="field" id="pMelNew" type="text" maxlength="120" placeholder="Omschrijving, bijv. Inbraak woning Kerkstraat" autocomplete="off" hidden>
@@ -826,13 +826,12 @@ function fileSave(o){
 /* ---------- Burgerspraakaanvragen ---------- */
 var LSBG='roepnummers-zevenaar-burger-v1',bgInit=false,bgMsg=null;
 var bgq={};try{bgq=JSON.parse(localStorage.getItem(LSBG)||'{}')||{};}catch(e){bgq={};}
-var bgDraft={kanaal:'',soort:'',loc:'',tekst:'',naam:'',tel:''};
+var bgDraft={kanaal:'',soort:'',loc:'',plaats:'',adres:'',tekst:'',naam:'',tel:''},bgTarget={};
 var BGK={
   '112':{p:1,t:'112',d:'Spoed: levensbedreigend, direct gevaar of een misdrijf dat nu gebeurt',l:'112 \u00b7 Spoed',late:120000},
   '0900':{p:2,t:'0900-8844',d:'Politie, geen spoed',l:'0900-8844 \u00b7 Politie, geen spoed',late:600000},
   'alg':{p:3,t:'Algemene spraakaanvraag',d:'Overige vraag aan de meldkamer',l:'Algemene spraakaanvraag',late:1200000}};
 var BGS=['Politie','Brandweer','Ambulance / medisch','Overig'];
-var BGAAN={'Politie':['politie'],'Brandweer':['brandweer'],'Ambulance / medisch':['ambulance'],'Overig':[]};
 function bgPad(n){return n<10?'0'+n:''+n;}
 function bgFmt(s){var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+':'+bgPad(m)+':'+bgPad(x):m+':'+bgPad(x);}
 function bgWrite(id,rec){
@@ -858,7 +857,8 @@ function bgqHtml(){
       '<div class="bgr-b">'+(r.soort?'<b>'+esc(r.soort)+'</b>':'')+(r.loc?' &middot; '+esc(r.loc):'')+'<br>'+esc(r.tekst)+'</div>'+
       '<div class="bgr-m">'+esc(r.nr)+(r.naam?' &middot; '+esc(r.naam):'')+(r.tel?' &middot; '+esc(r.tel):'')+(r.status==='bezig'?' &middot; <b>In behandeling'+(r.by?' door '+esc(r.by):'')+'</b>':'')+'</div>'+
       '<div class="bgr-a">'+(r.status==='open'?'<button type="button" class="btn" data-bg="take" data-bid="'+esc(id)+'"'+dis+'>Oppakken</button>':'')+
-      '<button type="button" class="btn" data-bg="mel" data-bid="'+esc(id)+'"'+dis+'>Melding maken</button>'+
+      (bgTargets().length>1?'<select class="field" data-bgt="'+esc(id)+'" data-fk="bgt:'+esc(id)+'" aria-label="Dienst">'+bgTargets().map(function(t){return '<option value="'+t+'"'+(t===(bgTarget[id]||bgDefaultDisc(r))?' selected':'')+'>'+ambNmD(t)+'</option>';}).join('')+'</select>':'')+
+      '<button type="button" class="btn" data-bg="mel" data-bid="'+esc(id)+'"'+dis+'>Incident maken</button>'+
       '<button type="button" class="btn" data-bg="done" data-bid="'+esc(id)+'"'+dis+'>Afronden</button></div></div>';
   }).join(''):'<p class="m-none">Geen openstaande burgeraanvragen.</p>')+'</div></div>';
 }
@@ -868,7 +868,8 @@ function burgerScreen(){
   ['112','0900','alg'].forEach(function(k){var x=BGK[k];h+='<button type="button" class="bg-k'+(d.kanaal===k?' on':'')+'" data-bg="k:'+k+'" data-bgp="'+x.p+'"><b>'+esc(x.t)+'</b><small>'+esc(x.d)+'</small></button>';});
   h+='</div>'+
     '<label class="bg-l"><span>Soort melding</span><select class="field" data-bgf="soort" data-fk="bg:soort"><option value="">&mdash; kies &mdash;</option>'+BGS.map(function(s){return '<option'+(d.soort===s?' selected':'')+'>'+esc(s)+'</option>';}).join('')+'</select></label>'+
-    '<label class="bg-l"><span>Locatie of adres</span><input class="field" data-bgf="loc" data-fk="bg:loc" type="text" maxlength="120" autocomplete="off" value="'+esc(d.loc)+'"></label>'+
+    '<label class="bg-l"><span>Plaats</span><select class="field" data-bgf="plaats" data-fk="bg:plaats"><option value="">&mdash; kies &mdash;</option>'+PLAATSEN_OK.map(function(q){return '<option'+(d.plaats===q.n?' selected':'')+'>'+esc(q.n)+'</option>';}).join('')+'</select></label>'+
+    '<label class="bg-l"><span>Straat en huisnummer (indien bekend)</span><input class="field" data-bgf="adres" data-fk="bg:adres" type="text" maxlength="100" autocomplete="off" value="'+esc(d.adres)+'"></label>'+
     '<label class="bg-l"><span>Wat is er aan de hand?</span><textarea class="field" data-bgf="tekst" data-fk="bg:tekst" rows="4" maxlength="500">'+esc(d.tekst)+'</textarea></label>'+
     '<label class="bg-l"><span>Je naam (optioneel)</span><input class="field" data-bgf="naam" data-fk="bg:naam" type="text" maxlength="60" autocomplete="off" value="'+esc(d.naam)+'"></label>'+
     '<label class="bg-l"><span>Telefoonnummer (optioneel)</span><input class="field" data-bgf="tel" data-fk="bg:tel" type="text" maxlength="30" autocomplete="off" value="'+esc(d.tel)+'"></label>'+
@@ -878,41 +879,60 @@ function burgerScreen(){
   if(mine.length){
     h+='<div class="bg-card"><h3>Jouw aanvragen</h3>'+mine.slice().reverse().map(function(id){
       var r=bgq[id],k=BGK[r.kanaal]||{l:''};
-      var st=r.status==='klaar'?'Afgehandeld':r.status==='bezig'?'Een centralist neemt je aanvraag op':'Ontvangen, wacht op de meldkamer';
+      var st=r.status==='klaar'?(r.melding?'Verwerkt: er is een melding gemaakt':'Afgehandeld'):r.status==='bezig'?'Een centralist neemt je aanvraag op':'Ontvangen, wacht op de meldkamer';
       return '<div class="bg-mine" data-s="'+esc(r.status)+'"><b>'+esc(r.nr)+'</b> &middot; '+esc(k.l)+'<br><span>'+st+'</span>'+(r.status==='klaar'?'':' &middot; wachttijd <span data-bgs="'+r.created+'"></span>')+'</div>';
     }).join('')+'</div>';
   }
   return h+'</div>';
 }
 function bgSend(){
-  var d=bgDraft,tx=(d.tekst||'').trim(),loc=(d.loc||'').trim();
+  var d=bgDraft,tx=(d.tekst||'').trim(),pl=String(d.plaats||'').trim(),ad=String(d.adres||'').trim(),loc=(ad+(ad&&pl?', ':'')+pl);
   var err=function(x){bgMsg={t:'err',x:x};render();};
   if(!d.kanaal)return err('Kies eerst 112, 0900-8844 of een algemene spraakaanvraag.');
   if(d.kanaal!=='alg'&&!d.soort)return err('Kies de soort melding.');
-  if(d.kanaal!=='alg'&&!loc)return err('Vul de locatie of het adres in.');
+  if(d.kanaal!=='alg'&&!pl)return err('Kies de plaats.');
+  if(pl&&!plaatsOk(pl))return err('Kies een plaats uit de lijst.');
   if(tx.length<3)return err('Beschrijf kort wat er aan de hand is.');
   var last=0;try{last=+localStorage.getItem('gms-bglast')||0;}catch(e){}
   var wacht=Math.ceil((60000-(Date.now()-last))/1000);
   if(wacht>0)return err('Wacht nog '+wacht+' seconden voordat je een nieuwe aanvraag verstuurt.');
   var openMine=bgMine().filter(function(id){return bgq[id]&&bgq[id].status!=='klaar';}).length;
   if(openMine>=3)return err('Je hebt al 3 openstaande aanvragen. Wacht tot een daarvan is afgehandeld.');
-  var id=bgNewId(),rec={nr:'B'+(1000+Math.floor(Math.random()*9000)),kanaal:d.kanaal,soort:d.soort||'',loc:loc.slice(0,120),tekst:tx.slice(0,500),naam:(d.naam||'').trim().slice(0,60),tel:(d.tel||'').trim().slice(0,30),created:Date.now(),status:'open',by:'',cid:CLIENT};
+  var id=bgNewId(),rec={nr:'B'+(1000+Math.floor(Math.random()*9000)),kanaal:d.kanaal,soort:d.soort||'',loc:loc.slice(0,120),plaats:pl,adres:ad.slice(0,100),tekst:tx.slice(0,500),naam:(d.naam||'').trim().slice(0,60),tel:(d.tel||'').trim().slice(0,30),created:Date.now(),status:'open',by:'',cid:CLIENT};
   Promise.resolve(bgWrite(id,rec)).then(function(){
     var m=bgMine();m.push(id);try{localStorage.setItem('gms-bgmine',JSON.stringify(m.slice(-10)));localStorage.setItem('gms-bglast',String(Date.now()));}catch(e){}
-    bgDraft={kanaal:'',soort:'',loc:'',tekst:'',naam:d.naam,tel:d.tel};
+    bgDraft={kanaal:'',soort:'',loc:'',plaats:'',adres:'',tekst:'',naam:d.naam,tel:d.tel};
     bgMsg={t:'ok',x:'Je aanvraag is verstuurd. Referentie: '+rec.nr+'.'};render();
   }).catch(function(e){var em=(e&&(e.message||e.details))||String(e||'');console.error('Burgeraanvraag versturen mislukt:',em);err('Versturen is niet gelukt. Probeer het later opnieuw.'+(/row-level security|policy|permission/i.test(em)?' De database staat dit nog niet toe: vraag een beheerder om de rechten in te stellen.':''));});
 }
-function bgMakeMel(id){
-  var r=bgq[id];if(!r)return;
-  var k=BGK[r.kanaal]||{t:r.kanaal,l:r.kanaal};
-  var title=((r.soort?r.soort+' \u00b7 ':'')+(r.loc||'locatie onbekend')+' \u00b7 '+k.t).slice(0,120);
-  var notes='Burgeraanvraag '+r.nr+' ('+k.l+')\nLocatie: '+(r.loc||'-')+'\nOmschrijving: '+r.tekst+(r.naam||r.tel?'\nMelder: '+[r.naam,r.tel].filter(Boolean).join(' / '):'');
-  var mid=newMelId(),by=myName||(role&&role.name)||'';
-  Promise.resolve(writeMel(mid,{title:title,notes:notes,closed:false,created:Date.now(),aan:(BGAAN[r.soort]||[]).slice(),mc:''},true))
-    .then(function(){return bgWrite(id,Object.assign({},r,{status:'klaar',melding:mid,by:by,doneAt:Date.now()}));})
-    .then(function(){logEvent('Burgeraanvraag '+r.nr+' omgezet in melding');toast('Melding aangemaakt uit burgeraanvraag '+r.nr);})
-    .catch(onWriteError);
+function bgTargets(){
+  var all=['politie','brandweer','ambulance'];
+  if(!role)return [];
+  if(!role.tabs)return all;
+  return all.filter(function(d){return role.tabs.indexOf(DISC[d].tab)>=0||(d==='politie'&&role.tabs.indexOf('kmar')>=0);});
+}
+function bgDefaultDisc(r){
+  var t=bgTargets(),want=r.soort==='Politie'?'politie':r.soort==='Brandweer'?'brandweer':r.soort==='Ambulance / medisch'?'ambulance':'';
+  return (want&&t.indexOf(want)>=0)?want:(t[0]||'politie');
+}
+async function bgMakeInc(id){
+  var r=bgq[id];if(!r||!canWrite)return;
+  var ts=bgTargets();if(!ts.length){toast('Vanuit deze werkplek kun je geen incident aanmaken.');return;}
+  var to=ts.indexOf(bgTarget[id])>=0?bgTarget[id]:bgDefaultDisc(r),k=BGK[r.kanaal]||{l:r.kanaal},mx=0;
+  Object.keys(amb).forEach(function(q){mx=Math.max(mx,amb[q].nr||0);});
+  var nid=newAmbId(),now=Date.now(),by=myName||(role&&role.name)||'',pok=plaatsOk(r.plaats);
+  var rec=Object.assign(ambBlank(),{nr:mx+1,units:[],closed:false,created:now,disc:to,links:[],
+    plaats:pok?r.plaats:'',straat:r.adres||(pok?'':(r.loc||'')),melder:r.naam||'',tel:r.tel||'',
+    bijz:('Burgeraanvraag '+r.nr+' ('+k.l+'). '+(r.tekst||'')).trim().slice(0,500),bgnr:r.nr,bgk:k.l,bgid:id});
+  rec.log=[{t:now,k:'',x:'Oproep aangemaakt door discipline: '+DISC[to].code+' -- Burgeraanvraag '+r.nr+' ('+k.l+').'}];
+  mine[nid]=1;
+  try{
+    await writeAmb(nid,rec);
+    await bgWrite(id,Object.assign({},r,{status:'klaar',melding:nid,disc:to,by:by,doneAt:now}));
+    logEvent('Burgeraanvraag '+r.nr+' omgezet in '+ambNmD(to).toLowerCase()+'-melding '+rec.nr);
+    tab=DISC[to].tab;ambSel=nid;af=Object.assign(ambBlank(),rec);ambLinkDraft='';render();
+    toast('Incident '+rec.nr+' aangemaakt bij '+ambNmD(to)+'. Kies de classificatie, de prioriteit volgt daaruit.');
+  }catch(e){onWriteError(e);}
 }
 function bgAct(b){
   var a=b.getAttribute('data-bg'),id=b.getAttribute('data-bid');
@@ -922,7 +942,7 @@ function bgAct(b){
   var by=myName||(role&&role.name)||'';
   if(a==='take'){logEvent('Burgeraanvraag '+r.nr+' opgepakt door '+by);Promise.resolve(bgWrite(id,Object.assign({},r,{status:'bezig',by:by,takenAt:Date.now()}))).catch(onWriteError);return;}
   if(a==='done'){logEvent('Burgeraanvraag '+r.nr+' afgerond');Promise.resolve(bgWrite(id,Object.assign({},r,{status:'klaar',by:by,doneAt:Date.now()}))).catch(onWriteError);return;}
-  if(a==='mel'){bgMakeMel(id);return;}
+  if(a==='mel'){bgMakeInc(id);return;}
 }
 function bgTick(){
   var els=document.querySelectorAll('[data-bgs]'),now=Date.now();
@@ -1054,8 +1074,8 @@ function logCsv(){
 }
 var SCEN=[
   {n:'Verkeersongeval A12',items:[
-    {s:0,a:{mc:'Ongeval / Wegvervoer / Letsel',urg:'A1',plaats:'Ede',straat:'A12',bijz:'Meerdere gewonden'}},
-    {s:10,a:{mc:'Ongeval / Wegvervoer / Letsel',urg:'A2',plaats:'Ede',straat:'A12',bijz:'Tweede voertuig betrokken'}},
+    {s:0,a:{mc:'Ongeval / Wegvervoer / Letsel',urg:'A1',plaats:'Didam',straat:'A12',bijz:'Meerdere gewonden'}},
+    {s:10,a:{mc:'Ongeval / Wegvervoer / Letsel',urg:'A2',plaats:'Didam',straat:'A12',bijz:'Tweede voertuig betrokken'}},
     {s:20,m:'Verkeersongeval A12: wegafsluiting en afzetting',aan:['politie']}]},
   {n:'Grote brand (GRIP 2)',items:[
     {s:0,c:{text:'Grote brand bedrijfspand Zevenaar',d:['brandweer','ambulance','politie'],g:2}},
@@ -1075,7 +1095,7 @@ var SCEN=[
   {n:'Politie: verdacht pakket',items:[
     {s:0,m:'Verdacht pakket op perron station Zevenaar',aan:['politie']},
     {s:10,m:'Afzetting 100 meter en ontruiming perron',aan:['politie']}]},
-  {n:'Dienstverlening ambuzorg',items:[{s:0,a:{mc:'Dienstverlening ambuzorg',urg:'B2',plaats:'Dieren'}}]}
+  {n:'Dienstverlening ambuzorg',items:[{s:0,a:{mc:'Dienstverlening ambuzorg',urg:'B2',plaats:'Babberich'}}]}
 ];
 function scenHtml(dis){
   return '<div class="apanel"><h3>Testmeldingen<small>test</small></h3><div class="pb"><div class="terms">'+SCEN.map(function(c,i){
@@ -1092,7 +1112,13 @@ function scenRun(i){
       var mx=0;Object.keys(amb).forEach(function(k){mx=Math.max(mx,amb[k].nr||0);});
       var id=newAmbId(),rec=Object.assign(ambBlank(),it.a,{mc:'TEST \u00b7 '+it.a.mc,nr:mx+1,units:[],closed:false,created:now,log:[{t:now,k:'',x:'Oproep aangemaakt door discipline: A -- Nieuwe melding.'},{t:now,k:'UITGIFTE',x:'Testmelding: '+sc.n}]});
       mine[id]=1;ping('melding');writeAmb(id,rec).catch(function(){});
-    }else if(it.m)writeMel(newMelId(),{title:'TEST \u00b7 '+it.m,notes:'',closed:false,created:now,aan:it.aan||[]},true).catch(function(){});
+    }else if(it.m){
+        var mx2=0;Object.keys(amb).forEach(function(q){mx2=Math.max(mx2,amb[q].nr||0);});
+        var dsc=(it.aan||[]).indexOf('brandweer')>=0?'brandweer':'politie',id2=newAmbId();
+        var rec2=Object.assign(ambBlank(),{mc:'TEST \u00b7 '+String(it.m).slice(0,70),plaats:'Zevenaar',nr:mx2+1,units:[],closed:false,created:now,disc:dsc,
+          log:[{t:now,k:'',x:'Oproep aangemaakt door discipline: '+DISC[dsc].code+' -- Nieuwe melding.'},{t:now,k:'UITGIFTE',x:'Testmelding'}]});
+        mine[id2]=1;ping('melding');writeAmb(id2,rec2).catch(function(){});
+      }
   },it.s*1000);});
 }
 var normN=function(x){return String(x||'').toLowerCase().replace(/\s+/g,' ').trim();};
@@ -1116,16 +1142,11 @@ async function eigSendLocal(){
   if(!t){toast('Typ eerst je melding.');return;}
   var dienst=tabOf(UNITS[id].section),now=Date.now();
   try{
-    if(dienst==='ambulance'){
-      var mx=0;Object.keys(amb).forEach(function(k){mx=Math.max(mx,amb[k].nr||0);});
-      var aid=newAmbId(),rec=Object.assign(ambBlank(),{mc:'Melding eigen initiatief',plaats:(UNITS[id].label||'').split(' \u00b7 ').pop(),bijz:t,nr:mx+1,units:[id],closed:false,created:now,
-        log:[{t:now,k:'',x:'Oproep aangemaakt door discipline: A -- Nieuwe melding.'},{t:now,k:'UITGIFTE',x:id+' \u00b7 melding eigen initiatief: '+t}]});
-      mine[aid]=1;await writeAmb(aid,rec);
-    }else{
-      var mid=newMelId();
-      await writeMel(mid,{title:'Eigen initiatief '+id+': '+t,notes:'',closed:false,created:now,aan:[dienst]},true);
-      await write(id,Object.assign({},data[id]||{names:[],note:''},{melding:mid}));
-    }
+    var dsc=dienst==='ambulance'?'ambulance':(dienst==='brandweer'?'brandweer':'politie');
+    var mx=0;Object.keys(amb).forEach(function(k){mx=Math.max(mx,amb[k].nr||0);});
+    var aid=newAmbId(),rec=Object.assign(ambBlank(),{mc:'Melding eigen initiatief',plaats:dsc==='ambulance'?(UNITS[id].label||'').split(' \u00b7 ').pop():'',bijz:t,nr:mx+1,units:[id],closed:false,created:now,disc:dsc,
+      log:[{t:now,k:'',x:'Oproep aangemaakt door discipline: '+DISC[dsc].code+' -- Nieuwe melding.'},{t:now,k:'UITGIFTE',x:id+' \u00b7 melding eigen initiatief: '+t}]});
+    mine[aid]=1;await writeAmb(aid,rec);
     eigDraft='';eigSent='Melding verstuurd naar de meldkamer ('+fmtTime(now)+').';
     toast('Melding verstuurd.');renderBoard();
   }catch(e){onWriteError(e);}
@@ -1494,6 +1515,13 @@ function ambTerms(){
     if(!(k in m))order.push(k);
     m[k]={k:t.k,mc:t.mc,urg:t.urg||'',key:k,did:did};
   });
+  var known={};order.forEach(function(k){known[k]=1;(m[k].al||[]).forEach(function(a){known[a]=1;});});
+  LMC.forEach(function(e){
+    if(e[8].indexOf('A')<0||!e[9].length)return;
+    var ks=e[9].map(ambTermKey);if(ks.some(function(x){return known[x];}))return;
+    order.push(ks[0]);known[ks[0]]=1;ks.slice(1).forEach(function(a){known[a]=1;});
+    m[ks[0]]={k:e[9][0],mc:lmcPath(e).replace(/ \u203a /g,' / '),urg:'',key:ks[0],did:'',al:ks.slice(1)};
+  });
   return order.map(function(k){return m[k];});
 }
 function ambFindTerm(x){var k=ambTermKey(x),l=ambTerms();for(var i=0;i<l.length;i++){if(l[i].key===k||(l[i].al&&l[i].al.indexOf(k)>=0))return l[i];}return null;}
@@ -1581,7 +1609,7 @@ function renderTabs(){
   SECTIONS.forEach(function(s){var t=tabOf(s);if(!roleOk(t))return;if(!(t in act)){act[t]=0;order.push(t);names[t]=s.parent?'Politie':s.short;}});
   ORDER.filter(unitOk).forEach(function(id){if(isActive(statusOf(id))){act[tabOf(UNITS[id].section)]++;total++;}});
   var items=[{id:'all',n:'Alles',c:total}].concat(isLead()?[{id:'caco',n:role.id==='ovd'?'OvD-OC':'CaCo',c:ambOpenAll().length+openMeldingen().length}]:[]).concat(order.map(function(t){return {id:t,n:names[t],c:act[t]};}))
-    .concat([{id:'ber',n:'Berichten',c:berUnread()},{id:'meldingen',n:'Meldingen',c:openMeldingen().length}]);
+    .concat([{id:'ber',n:'Berichten',c:berUnread()}]).concat((openMeldingen().length||tab==='meldingen')?[{id:'meldingen',n:'Oude meldingen',c:openMeldingen().length}]:[]);
   $('tabs').innerHTML=items.map(function(it){
     return '<button class="tab" data-t="'+it.id+'" aria-pressed="'+(tab===it.id)+'">'+esc(it.n)+'<b>'+it.c+'</b></button>';
   }).join('');
@@ -1662,9 +1690,15 @@ var LMC=[["200000006","Alarm","","","Alarm","Alle soorten alarmen van detectiesy
 var LMC_FAV={brandweer:["-brand woning", "-brand gebouw", "-buitenbrand", "-natuurbrand", "-brand wegvervoer", "-autom brandmelding", "-oms brandmelding", "-brandgerucht", "-liftopsluiting", "-nablussen", "-persoon te water", "-stormschade"],politie:["-inbraak woning", "-inbraak bedrijf-inst", "-overval woning", "-schietpartij", "-steekpartij", "-mishandeling", "-geweld", "-bedreiging", "-burenruzie", "-vermissing", "-ongeval wegvervoer", "-verdachte situatie", "-verdacht persoon", "-overlast jeugd", "-winkeldiefstal"]};
 var LMC_IDX=null,LMC_CACHE={},incQ='';
 function lmcPath(e){return [e[1],e[2],e[3]].filter(Boolean).join(' \u203a ');}
+function lmcNorm(x){return String(x||'').toLowerCase().replace(/\s*[\/\u203a]\s*/g,' / ').replace(/\s+/g,' ').trim();}
 function lmcFind(txt){
-  if(!LMC_IDX){LMC_IDX={};LMC.forEach(function(e){var k=e[4].toLowerCase();if(!LMC_IDX[k])LMC_IDX[k]=e;});}
-  var k=String(txt||'').trim().toLowerCase();return k?(LMC_IDX[k]||null):null;
+  if(!LMC_IDX){LMC_IDX={pres:{},path:{},key:{}};LMC.forEach(function(e){var p=lmcNorm(e[4]);if(!LMC_IDX.pres[p])LMC_IDX.pres[p]=e;LMC_IDX.path[lmcNorm([e[1],e[2],e[3]].filter(Boolean).join(' / '))]=e;e[9].forEach(function(t){var k=ambTermKey(t);if(!LMC_IDX.key[k])LMC_IDX.key[k]=e;});});}
+  var k=lmcNorm(txt);return k?(LMC_IDX.pres[k]||LMC_IDX.path[k]||null):null;
+}
+function lmcByTerm(t){lmcFind('');var e=LMC_IDX.key[t.key];if(e)return e;for(var i=0;i<(t.al||[]).length;i++){e=LMC_IDX.key[t.al[i]];if(e)return e;}return null;}
+function incTerms(d){
+  if(d!=='ambulance')return lmcTerms(d);
+  return ambTerms().map(function(t){var e=lmcByTerm(t);return {k:t.k,mc:t.mc,urg:t.urg||'',key:t.key,did:t.did,al:t.al||[],path:e?lmcPath(e):'',def:e?e[5]:''};});
 }
 function lmcTerms(d){
   if(LMC_CACHE[d])return LMC_CACHE[d];
@@ -1675,23 +1709,23 @@ function lmcTerms(d){
   }));
 }
 function incTermBtn(t,dis){
-  return '<button class="btn term-btn" data-aa="term" data-tk="'+esc(t.key)+'" data-fk="pt:'+esc(t.key)+'" title="'+esc(t.def||'')+'"'+dis+'><b>'+esc(t.mc)+'</b><small>'+esc(t.k)+' &middot; '+esc(t.urg)+' &middot; '+esc(t.path)+'</small></button>';
+  return '<button class="btn term-btn" data-aa="term" data-tk="'+esc(t.key)+'" data-fk="pt:'+esc(t.key)+'" title="'+esc(t.def||'')+'"'+dis+'><b>'+esc(t.mc)+'</b><small>'+esc(t.k)+(t.urg?' &middot; '+esc(t.urg):'')+(t.path?' &middot; '+esc(t.path):'')+'</small></button>';
 }
 function incResultsHtml(){
-  var d=ambDisc(),T=lmcTerms(d),dis=canWrite?'':' disabled',q=incQ.trim(),list;
+  var d=ambDisc(),T=incTerms(d),dis=canWrite?'':' disabled',q=incQ.trim(),list;
   if(q){
     var qk=ambTermKey(q),ql=q.toLowerCase();
-    list=T.filter(function(t){return t.key.indexOf(qk)>=0||t.mc.toLowerCase().indexOf(ql)>=0||t.path.toLowerCase().indexOf(ql)>=0||t.al.some(function(a){return a.indexOf(qk)>=0;});});
+    list=T.filter(function(t){return t.key.indexOf(qk)>=0||t.mc.toLowerCase().indexOf(ql)>=0||(t.path||'').toLowerCase().indexOf(ql)>=0||t.al.some(function(a){return a.indexOf(qk)>=0;});});
     list.sort(function(a,b){var ra=a.key===qk?0:(a.key.indexOf(qk)===0||a.mc.toLowerCase().indexOf(ql)===0)?1:2,rb=b.key===qk?0:(b.key.indexOf(qk)===0||b.mc.toLowerCase().indexOf(ql)===0)?1:2;return (ra-rb)||(a.mc<b.mc?-1:a.mc>b.mc?1:0);});
   }else{
-    list=LMC_FAV[d].map(function(k){var kk=ambTermKey(k);return T.filter(function(t){return t.key===kk;})[0];}).filter(Boolean);
+    list=(d==='ambulance'?AMB_TERMS.slice(0,12).map(function(t){return t.k;}):LMC_FAV[d]).map(function(k){var kk=ambTermKey(k);return T.filter(function(t){return t.key===kk;})[0];}).filter(Boolean);
   }
   var total=list.length;
   return '<p class="m-none" style="margin:6px 0 4px">'+(q?(total+' resultaten'+(total>20?' (eerste 20 getoond)':'')):'Veelgebruikt. Zoek hierboven op naam, parserterm of omschrijving.')+'</p><div class="terms" style="max-height:280px;overflow:auto">'+(total?list.slice(0,20).map(function(t){return incTermBtn(t,dis);}).join(''):'<p class="m-none">Niets gevonden.</p>')+'</div>';
 }
 function incInfoHtml(){
   var e=lmcFind(af.mc);if(!e)return '';
-  var d=ambDisc(),pr=d==='brandweer'?e[7]:e[6];
+  var d=ambDisc(),pr=d==='brandweer'?e[7]:(d==='politie'?e[6]:0);
   return '<div class="mcinfo"><b>'+esc(e[4])+'</b> <small>'+esc(lmcPath(e))+(pr?' &middot; standaardprioriteit P'+pr:'')+'</small>'+(e[5]?'<p>'+esc(e[5])+'</p>':'')+'</div>';
 }
 function incParserHtml(){
@@ -1741,8 +1775,10 @@ var POL_PREF=[
 var POL_DEF=['Noodhulp (duo)','Noodhulp (solo)','Wijkagent','Onopvallend'];
 var escTo='';
 function ambLinksHtml(cur){
-  if(!cur||!cur.links||!cur.links.length)return '';
-  return '<div class="alinks">Gekoppelde meldingen: '+cur.links.map(function(l){var m=amb[l.id];return '<button type="button" class="btn sm" data-goto="amb:'+esc(l.id)+'">'+esc(ambNmD(l.disc))+' #'+(l.nr||'')+(m?(m.closed?' (afgerond)':''):' (verwijderd)')+'</button>';}).join(' ')+'</div>';
+  if(!cur)return '';
+  var bg=cur.bgnr?'<div class="alinks">Burgeraanvraag <b>'+esc(cur.bgnr)+'</b> ('+esc(cur.bgk||'')+')'+(cur.mc?'':' &middot; kies een classificatie, de prioriteit volgt daaruit')+'</div>':'';
+  if(!cur.links||!cur.links.length)return bg;
+  return bg+'<div class="alinks">Gekoppelde meldingen: '+cur.links.map(function(l){var m=amb[l.id];return '<button type="button" class="btn sm" data-goto="amb:'+esc(l.id)+'">'+esc(ambNmD(l.disc))+' #'+(l.nr||'')+(m?(m.closed?' (afgerond)':''):' (verwijderd)')+'</button>';}).join(' ')+'</div>';
 }
 async function ambEscalate(){
   if(!canWrite)return;
@@ -1947,9 +1983,6 @@ function ambField(k,label,cls,attrs){
 }
 function ambParserHtml(){
   var dis=canWrite?'':' disabled',terms=ambTerms(),mine=terms.filter(function(t){return t.did;});
-  var btns=terms.map(function(t){
-    return '<button class="btn term-btn" data-aa="term" data-tk="'+esc(t.key)+'" data-fk="pt:'+esc(t.key)+'"'+dis+'><b>'+esc(t.k)+'</b><small>'+esc(t.mc)+(t.urg?' &middot; '+esc(t.urg):'')+'</small></button>';
-  }).join('');
   var man='<details id="ambParDet" style="margin-top:10px"'+(ambParOpen?' open':'')+'><summary style="cursor:pointer;font-weight:600;font-size:14px">Termen beheren</summary>'+
     (mine.length?'<div style="margin-top:6px">'+mine.map(function(t){
       return '<div class="prop-row"><span class="pi">'+esc(t.k)+'</span><span class="ps">'+esc(t.mc)+(t.urg?' &middot; '+esc(t.urg):'')+'</span><button class="btn sm danger" data-aa="parDel" data-pk="'+esc(t.did)+'"'+dis+'>Verwijder</button></div>';
@@ -1962,7 +1995,7 @@ function ambParserHtml(){
       '<label class="c3"><span>&nbsp;</span><button class="btn" data-aa="parAdd"'+dis+'>Term toevoegen</button></label>'+
     '</div></details>';
   if(ambDisc()!=='ambulance')return incParserHtml();
-  return '<div class="terms" style="max-height:240px;overflow:auto">'+btns+'</div>'+man;
+  return incParserHtml()+man;
 }
 function ambHistHtml(){
   var cur=ambCur(),dis=canWrite?'':' disabled';
@@ -2285,12 +2318,8 @@ function meldingenBoard(){
   var open=openMeldingen().filter(melMatches);
   var closed=Object.keys(mel).filter(function(k){return mel[k].closed&&!ovnHide(mel[k])&&melMatches(k);})
     .sort(function(a,b){return (mel[b].closedAt||0)-(mel[a].closedAt||0);});
-  var h='<div class="mel-bar"><h2>Meldingen</h2>'+
-    '<input class="field" id="newMelTitle" data-fk="newmel" type="text" maxlength="120" placeholder="Omschrijving nieuwe melding"'+(canWrite?'':' disabled')+' value="'+esc(newMelDraft)+'">'+
-    '<input class="field" id="newMelTerm" data-fk="newterm" type="text" maxlength="60" list="melTerms" autocomplete="off" placeholder="Parserterm (optioneel)"'+(canWrite?'':' disabled')+' style="max-width:210px">'+'<datalist id="melTerms">'+melTermOpts()+'</datalist>'+
-    '<button class="btn primary" data-act="add"'+(canWrite?'':' disabled')+'>Melding toevoegen</button></div>'+
-    '<div class="calbtns" style="margin:6px 0 10px"><span class="m-none">Betrokken diensten (niets aangevinkt = iedereen):</span>'+Object.keys(DN).map(function(t){return '<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-mc="'+t+'"'+(melAan.indexOf(t)>=0?' checked':'')+(canWrite?'':' disabled')+'>'+DN[t]+'</label>';}).join('')+'</div>';
-  if(!open.length)h+='<p class="empty">'+(query?'Geen meldingen gevonden.':'Er zijn geen open meldingen. Voeg er hierboven een toe of maak er een aan bij een roepnummer.')+'</p>';
+  var h='<div class="mel-bar"><h2>Oude meldingen</h2><span class="m-none">Nieuwe meldingen maak je op het bord van je dienst (Brandweer, Politie, KMar of Ambulance). Hier staan alleen nog oude meldingen die je kunt afronden.</span></div>';
+  if(!open.length)h+='<p class="empty">'+(query?'Geen meldingen gevonden.':'Er zijn geen open oude meldingen.')+'</p>';
   else{
     h+='<div class="mcards">'+open.map(function(k){
       var m=mel[k],dr=drafts[k]||{},dis=canWrite?'':' disabled';
@@ -2687,7 +2716,6 @@ function melOptions(sel){
   openMeldingen().forEach(function(k){
     h+='<option value="'+esc(k)+'">'+esc(mel[k].title)+' ('+(counts[k]||0)+' eenh.)</option>';
   });
-  h+='<option value="__new__">+ Nieuwe melding&hellip;</option>';
   return h;
 }
 function updateMelUi(populate){
@@ -2701,6 +2729,9 @@ function updateMelUi(populate){
   var others=(sel&&!isNew)?unitsOf(sel).filter(function(id){return panel&&id!==panel.id;}):[];
   $('pMelUnits').hidden=!others.length;
   $('pMelUnits').textContent=others.length?'Ook op deze melding: '+others.join(', '):'';
+  var anyMel=openMeldingen().length>0;
+  ['pMelH','pMel'].forEach(function(i){var e=$(i);if(e)e.hidden=!anyMel;});
+  if(!anyMel){['pMelHint','pMelNotesWrap','pMelUnits'].forEach(function(i){var e=$(i);if(e)e.hidden=true;});}
 }
 function refreshPanelMel(){
   if(!panel)return;
@@ -2915,15 +2946,7 @@ async function melAction(act,mid,btn){
   if(act==='link'){await linkUnits(mid,btn.closest('.mcard'));return;}
   if(act==='unlink'){await unlinkUnit(btn.getAttribute('data-uid'));return;}
   try{
-    if(act==='add'){
-      var inp=$('newMelTitle'),tin=$('newMelTerm'),tm=(tin&&tin.value.trim())?melFind(tin.value):null,title=(inp?inp.value:'').trim();
-      if(tin&&tin.value.trim()&&!tm){toast('Onbekende parserterm: '+tin.value);return;}
-      if(!title&&tm)title=tm.mc.split(' / ').pop();
-      if(!title){toast('Geef de melding een omschrijving.');if(inp)inp.focus();return;}
-      newMelDraft='';var maan=melAan.slice();melAan=[];
-      await writeMel(newMelId(),{title:title,notes:'',closed:false,created:Date.now(),aan:maan,mc:tm?tm.mc:''},true);
-      toast('Melding toegevoegd.');
-    }else if(act==='save'){
+    if(act==='save'){
       var card=btn.closest('.mcard');
       var t=card.querySelector('.m-title').value.trim(),n=card.querySelector('.m-notes').value.replace(/\s+$/,'');
       if(!t){toast('Een melding heeft een omschrijving nodig.');return;}
@@ -3025,6 +3048,7 @@ $('board').addEventListener('input',function(e){
   if(bd){var bx=berAan.indexOf(bd);if(el.checked){if(bx<0)berAan.push(bd);}else if(bx>=0)berAan.splice(bx,1);return;}
   var cd=el.getAttribute&&el.getAttribute('data-cd');
   if(cd){var ix=calDienst.indexOf(cd);if(el.checked){if(ix<0)calDienst.push(cd);}else if(ix>=0)calDienst.splice(ix,1);return;}
+  if(el.getAttribute&&el.getAttribute('data-bgt')!==null){bgTarget[el.getAttribute('data-bgt')]=el.value;return;}
   if(el.getAttribute&&el.getAttribute('data-esc')!==null){escTo=el.value;return;}
   if(el.getAttribute&&el.getAttribute('data-iq')!==null){incQ=el.value;var re2=$('incRes');if(re2)re2.innerHTML=incResultsHtml();return;}
   var pdk=el.getAttribute&&el.getAttribute('data-pd');
