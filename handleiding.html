@@ -101,7 +101,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <p class="lead">Op het ambulancebord werk je met <strong>incidenten</strong>. Een incident krijgt een melding, een eenheid en een verloop. Zo loop je er stap voor stap doorheen.</p>
 <ol class="steps">
 <li><b>Nieuwe melding starten</b>Kies <em>Nieuwe melding</em>. Je krijgt een lege incidentkaart.</li>
-<li><b>Gegevens invullen of een parserterm kiezen</b>Vul de MC (meldingsclassificatie), de urgentie, de plaats, straat, postcode, bijzonderheden en bestemming in. Met de <em>Parsertermen</em> (snelle keuze) vul je de kaart in één klik, bijvoorbeeld voor een hulpvraag ambulancezorg.</li>
+<li><b>Gegevens invullen of een parserterm kiezen</b>Vul de MC (meldingsclassificatie), de urgentie, de plaats, straat, postcode, bijzonderheden en bestemming in. Met de <em>Parsertermen</em> (snelle keuze) vul je de kaart in één klik, bijvoorbeeld voor een hulpvraag ambulancezorg. Ook bij de ambulance zoek je in het zoekvak op naam, parserterm of omschrijving. De ambulance-classificaties van de LMC 12.0 zitten erin, met de beschrijving.</li>
 <li><b>Opslaan</b>Klik op opslaan. De melding krijgt een nummer en komt onder <em>Wachtend op uitgifte</em> te staan, tot er een eenheid aan gekoppeld is.</li>
 <li><b>Het inzetvoorstel bekijken</b>Zodra je een plaats hebt ingevuld, doet het systeem een voorstel. Staat er in die plaats een beschikbare ambulance (status 1 of 4), dan wordt die voorgesteld. Anders krijg je de dichtstbijzijnde beschikbare, met de afstand in kilometers.</li>
 <li><b>Eenheid koppelen</b>Typ het roepnummer, bijvoorbeeld 07-113, en klik <em>Koppelen</em>. De eenheid gaat automatisch naar <strong>status 2 (Aanrijdend)</strong>, tenzij je zelf een andere status kiest.</li>
@@ -134,7 +134,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <div class="card"><h3>Voorstel politie en KMar</h3><p>Het type eenheid past bij de melding: bij geweld of een inbraak op heterdaad <strong>Noodhulp</strong>, bij een verkeersongeval <strong>Team verkeer</strong>, bij vermissing een <strong>hondeleider</strong>, bij overlast de <strong>wijkagent</strong>. Heeft de beheerder voor eenheden een <strong>standplaats</strong> ingesteld, dan staat de dichtstbijzijnde eenheid van het passende type bovenaan, met de afstand in km. Zonder standplaats kiest het voorstel alleen op type en beschikbaarheid. <strong>KMar</strong> staat voorop bij grens- of luchthavenmeldingen en anders achteraan. Hangen er <strong>meer dan 3 politie-eenheden</strong> aan de melding, dan wordt ook een <strong>OVD-P</strong> voorgesteld.</p></div>
 </div>
 <div class="tip">Alleen eenheden met status 1 of 4 worden voorgesteld. Een eenheid op status 2 of 3, of die al aan een andere melding hangt, ontbreekt dus. Je kunt altijd zelf een eenheid koppelen.</div>
-<p>De tab <strong>Meldingen</strong> blijft bestaan voor losse meldingen zonder incidentkaart. Daar werk je met een titel, notities en gekoppelde eenheden.</p>
+<p>De oude tab Meldingen is vervangen door deze incidenten. Staan er nog oude open meldingen, dan zie je tijdelijk de tab <strong>Oude meldingen</strong>. De beheerder zet ze om naar incidenten, waarna de tab vanzelf verdwijnt. Een melding van een eenheid (status 8, eigen initiatief) komt ook als incident binnen, met de eenheid al gekoppeld.</p>
 </section>
 
 <section id="burger"><h2><b>5</b>Burgeraanvragen</h2>
@@ -147,12 +147,12 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <div class="row late"><span class="pb" style="background:#dc2626">P1</span><span>112 · Brandweer<small>Hoofdstraat 1, rook uit het dak</small></span><span class="t">02:35</span></div>
 <div class="row"><span class="pb" style="background:#e8890c">P2</span><span>0900-8844 · Politie<small>Markt 2, geluidsoverlast</small></span><span class="t">05:10</span></div>
 <div class="row"><span class="pb" style="background:#2563eb">P3</span><span>Algemeen<small>Vraag aan de meldkamer</small></span><span class="t">12:36</span></div>
-<span class="btn">Oppakken</span><span class="btn">Melding maken</span><span class="btn g">Afronden</span>
+<span class="btn">Oppakken</span><span class="btn">Incident maken</span><span class="btn g">Afronden</span>
 <div class="cap">De tijd rechts is de wachttijd en loopt vanzelf door.</div></div>
 <h3>Wat doe je met een aanvraag?</h3>
 <div class="grid">
 <div class="card"><h3>Oppakken</h3><p>Je neemt de aanvraag in behandeling. Je naam komt erbij, en de burger ziet dat een centralist de aanvraag oppakt.</p></div>
-<div class="card"><h3>Melding maken</h3><p>Het systeem maakt een melding met alle gegevens, gericht aan de juiste dienst. De aanvraag is daarmee afgehandeld.</p></div>
+<div class="card"><h3>Incident maken</h3><p>Het systeem maakt een incident bij de juiste dienst, met plaats, adres, melder en omschrijving. De dienst volgt de soort melding, of kies zelf een dienst als je werkplek er meer heeft. Je komt direct op de incidentkaart. Daar kies je de <strong>classificatie</strong>; de prioriteit volgt uit die classificatie en is dus niet altijd P1, ook niet bij 112. De aanvraag is daarmee afgehandeld.</p></div>
 <div class="card"><h3>Afronden</h3><p>Je sluit de aanvraag af zonder melding, bijvoorbeeld als een vraag mondeling is beantwoord.</p></div>
 </div>
 <div class="tip">Bij een nieuwe aanvraag hoor je een geluid (bij 112 het urgente geluid) en zie je een bericht in beeld. Zo mis je er geen.</div>
