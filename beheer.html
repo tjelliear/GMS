@@ -348,6 +348,7 @@ function vBak(){
     return '<div class="cards"><div class="card"><b>'+DOCS.size+'</b><span class="mono">Documenten</span></div><div class="card"><b>'+size+' KB</b><span class="mono">Omvang gegevens</span></div><div class="card"><b>'+t+'</b><span class="mono">Testgegevens</span></div><div class="card"><b style="font-size:20px">'+(live?'Verbonden':'Verbroken')+'</b><span class="mono">Live synchronisatie</span><small>Laatste: '+fmtS(lastSync)+'</small></div></div>'+
       '<div class="grid2"><div class="panel"><h3>Per soort<small>documenten</small></h3><div class="pb">'+barsH(c)+'</div></div><div>'+
       '<div class="panel"><h3>Back-up</h3><div class="pb"><p class="muted" style="margin-top:0">Download alle gegevens als \u00e9\u00e9n bestand, of zet een eerder bestand terug. Terugzetten voegt de gegevens toe aan de bestaande en overschrijft documenten met dezelfde naam. Er wordt niets verwijderd.</p><div class="acts"><button class="btn primary mono" data-a="bexp">Back-up downloaden</button><button class="btn mono" data-a="brest">Terugzetten uit bestand</button></div><input type="file" id="bfile" accept="application/json,.json" style="display:none"></div></div>'+
+      '<div class="panel"><h3>Oude meldingen (tab Meldingen)<small>'+docs('meldingen').filter(x=>!x.d.closed).length+' open</small></h3><div class="pb"><p class="muted" style="margin-top:0">Brandweer, politie en KMar werken nu met incidenten, net als de ambulance. Zet de oude open meldingen om naar incidenten: de gekoppelde eenheden gaan mee, de oude melding wordt afgerond en de tab Meldingen verdwijnt vanzelf zodra er geen open oude meldingen meer zijn. De dienst volgt de betrokken diensten van de melding (brandweer als die erbij staat, anders politie).</p><div class="row"><button class="btn primary mono" data-a="mmig">Open meldingen omzetten ('+docs('meldingen').filter(x=>!x.d.closed).length+')</button><button class="btn mono" data-a="mdelc">Afgeronde oude meldingen verwijderen ('+docs('meldingen').filter(x=>x.d.closed).length+')</button></div></div></div>'+
       '<div class="panel"><h3>Plaatsen voor meldingen<small>'+PLD().split('\n').filter(l=>l.replace(/#.*$/,'').trim()).length+' plaatsen</small></h3><div class="pb"><p class="muted" style="margin-top:0">Bij een melding kan alleen een plaats uit deze lijst gekozen worden. Een regel per plaats: <b>naam;land;breedtegraad;lengtegraad</b>, bijvoorbeeld <b>Zevenaar;NL;51.927;6.071</b>. Land is NL of DU. Zonder coördinaten werkt de plaats wel, maar zijn er geen afstanden voor de inzetvoorstellen. De coördinaten van Babberich, Groot-Holthuizen en Elten zijn bij benadering; Feldhuisen heeft er nog geen.</p><textarea id="plTxt" rows="8" style="width:100%;font-family:ui-monospace,Menlo,Consolas,monospace">'+esc(PLD())+'</textarea><div class="row" style="margin-top:8px"><button class="btn primary mono" data-a="plsave">Opslaan</button><button class="btn mono" data-a="plreset">Standaardlijst terugzetten</button></div></div></div>'+
       '<div class="panel"><h3>Standplaatsen politie en KMar<small>'+SP().split('\n').filter(l=>/^[^#=]+=.+$/.test(l.trim())).length+' regels</small></h3><div class="pb"><p class="muted" style="margin-top:0">Geef eenheden een standplaats, dan stelt het systeem bij een melding de dichtstbijzijnde eenheid voor. Een regel per eenheid (<b>ON0035=Zevenaar</b>) of per voorvoegsel met een sterretje (<b>ON00*=Zevenaar</b>); een exacte regel gaat voor. Alles na een # is commentaar. Plaatsen die het systeem kent: '+KNOWN().join(', ')+'.</p><textarea id="spTxt" rows="9" style="width:100%;font-family:ui-monospace,Menlo,Consolas,monospace" placeholder="# voorbeeld&#10;ON00*=Zevenaar&#10;ON49*=Duiven&#10;ON0035=Westervoort">'+esc(SP())+'</textarea><div class="row" style="margin-top:8px"><button class="btn primary mono" data-a="spsave">Opslaan</button></div></div></div>'+
       '<div class="panel"><h3>Opruimen</h3><div class="pb"><p class="muted" style="margin-top:0">Houd de database klein en snel. Verwijderen is definitief; maak eventueel eerst een back-up.</p>'+
@@ -381,6 +382,33 @@ function navMark(){$('nav').querySelectorAll('button[data-v]').forEach(b=>b.clas
 /* ---------- acties ---------- */
 async function onAct(a,id){
   if(a==='moff'||a==='mon'){const aan=a==='moff';const b=($('mBericht')||{value:''}).value.trim().slice(0,300);return run(async()=>{await put('instellingen','onderhoud',{aan,bericht:b,sinds:Date.now()});await logAdmin(aan?'Pagina offline gezet (onderhoud)':'Pagina weer online gezet');},aan?'Pagina staat nu offline':'Pagina staat weer online');}
+  if(a==='mmig'){
+    const open=docs('meldingen').filter(x=>!x.d.closed);
+    if(!open.length){toast('Er zijn geen open oude meldingen.');return;}
+    if(!confirm(open.length+' open oude melding(en) omzetten naar incidenten? De gekoppelde eenheden gaan mee.'))return;
+    return run(async()=>{
+      let mx=Math.max(0,...docs('ambmeldingen').map(x=>x.d.nr||0)),n=0;
+      for(const x of open){
+        const m=x.d,aan=Array.isArray(m.aan)?m.aan:[],now=Date.now();
+        const disc=aan.indexOf('brandweer')>=0?'brandweer':((aan.length===1&&aan[0]==='ambulance')?'ambulance':'politie');
+        const us=docs('units').filter(u=>u.d.melding===x.id);
+        const id='m'+now.toString(36)+Math.random().toString(36).slice(2,6)+n;
+        const rec={nr:++mx,units:us.map(u=>u.id),closed:false,created:m.created||now,disc,links:[],mc:String(m.mc||'').slice(0,80),urg:'',melder:'',tel:'',straat:'',huisnr:'',plaats:'',postcode:'',bijz:(String(m.title||'')+(m.notes?'\n'+m.notes:'')).slice(0,500),best:'',klad:'',
+          log:[{t:now,k:'',x:'Overgezet uit de tab Meldingen: '+String(m.title||'').slice(0,100)}]};
+        await put('ambmeldingen',id,rec);
+        for(const u of us){const r=Object.assign({},u.d);delete r.melding;await put('units',u.id,r);}
+        await put('meldingen',x.id,Object.assign({},m,{closed:true,closedAt:now,notes:(m.notes?m.notes+'\n':'')+'[Omgezet naar incident '+rec.nr+']'}));
+        n++;
+      }
+      await logAdmin('Oude meldingen omgezet naar incidenten ('+n+')');
+    },open.length+' melding(en) omgezet naar incidenten');
+  }
+  if(a==='mdelc'){
+    const ids=docs('meldingen').filter(x=>x.d.closed).map(x=>x.id);
+    if(!ids.length){toast('Er zijn geen afgeronde oude meldingen.');return;}
+    if(!confirm(ids.length+' afgeronde oude meldingen definitief verwijderen?'))return;
+    return run(async()=>{await delMany('meldingen',ids);await logAdmin('Afgeronde oude meldingen verwijderd ('+ids.length+')');},ids.length+' meldingen verwijderd');
+  }
   if(a==='plreset'){if(!confirm('De plaatsenlijst terugzetten naar de standaardlijst?'))return;return run(async()=>{await put('instellingen','plaatsen',{tekst:PLAATS_DEF});await logAdmin('Plaatsenlijst teruggezet naar standaard');},'Standaardlijst teruggezet');}
   if(a==='plsave'){const tx=($('plTxt')||{value:''}).value.slice(0,3000),names=[],nocoord=[];tx.split('\n').forEach(l=>{l=l.replace(/#.*$/,'').trim();if(!l)return;const q=l.split(';').map(x=>x.trim());if(!q[0])return;names.push(q[0]);const la=parseFloat((q[2]||'').replace(',','.')),lo=parseFloat((q[3]||'').replace(',','.'));if(!(isFinite(la)&&isFinite(lo)))nocoord.push(q[0]);});if(!names.length){toast('Vul minstens één plaats in.');return;}return run(async()=>{await put('instellingen','plaatsen',{tekst:tx});await logAdmin('Plaatsen voor meldingen opgeslagen ('+names.length+')');},names.length+' plaatsen opgeslagen'+(nocoord.length?'. Zonder coördinaten (geen afstanden): '+nocoord.join(', '):''));}
   if(a==='spsave'){const tx=($('spTxt')||{value:''}).value.slice(0,5000),bad=[];let n=0;tx.split('\n').forEach(l=>{l=l.replace(/#.*$/,'').trim();const m=/^([^=]+)=(.+)$/.exec(l);if(!m)return;n++;if(KNOWN().indexOf(m[2].trim().toLowerCase())<0)bad.push(m[2].trim());});return run(async()=>{await put('instellingen','standplaatsen',{tekst:tx});await logAdmin('Standplaatsen politie opgeslagen ('+n+' regels)');},n+' regels opgeslagen'+(bad.length?'. Onbekende plaats (geen afstand): '+[...new Set(bad)].slice(0,5).join(', '):''));}
