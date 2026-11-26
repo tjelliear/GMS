@@ -38,7 +38,7 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 .wait{position:absolute;inset:0;z-index:3;background:rgba(4,11,16,.94);display:none;place-items:center;text-align:center;padding:6cqw;font-size:clamp(16px,2.6cqw,40px)}
 .wait.on{display:grid}.wait small{display:block;color:var(--mute);font-size:.6em;margin-top:.6em}
 @media(max-width:700px){.stage{aspect-ratio:auto;min-height:calc(100vh - 52px);width:100vw}.slide{position:static;padding:22px 18px}.ol,ol{grid-template-columns:1fr}.g{grid-template-columns:1fr 1fr}}
-</style>
+code{font-family:ui-monospace,Consolas,monospace;background:rgba(255,255,255,.12);padding:.1em .4em;border-radius:4px}</style>
 </head>
 <body>
 <div class="wrap"><div class="stage" id="stage">
@@ -64,7 +64,13 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 <section class="slide"><h2>Meldingen: brandweer, politie en KMar</h2><p class="m">Zelfde systeem als de ambulance. Politie en KMar delen hun meldingen.</p>
 <div class="flow"><span>Nieuwe melding</span><i>›</i><span>Inzetvoorstel</span><i>›</i><span>Alarmeer</span><i>›</i><span>Sluit incident</span></div>
 <div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Brandweer</b><small>Type voertuig past bij de melding, bijvoorbeeld tankautospuit en hoogwerker. Dichtstbijzijnde kazerne bovenaan, met km.</small></div><div class="c"><b>Politie en KMar</b><small>Type eenheid past bij de melding, zoals Noodhulp of Team verkeer. KMar voorop bij grens en luchthaven.</small></div></div>
-<p class="m">Zoek in alle LMC-classificaties en parsertermen, met beschrijving en standaardprioriteit. Alleen eenheden met status 1 of 4 worden voorgesteld. Nodig je ook een andere dienst? Met Opschalen maak je daar een gekoppelde melding.</p></section>
+<p class="m">Zoek in alle LMC-classificaties en parsertermen, met beschrijving en standaardprioriteit. Alleen eenheden met status 1 of 4 worden voorgesteld. Nodig je ook een andere dienst? Met Opschalen maak je daar een gekoppelde melding. Brandweer alarmeer je via de pieper (volgende dia).</p></section>
+
+<section class="slide"><h2>Brandweer alarmeren via de pieper</h2><p class="m">Elke brandweermelding krijgt een BON (BNN-01, BNN-02, ...). Een afgeronde melding geeft zijn BON weer vrij.</p>
+<div class="flow"><span>Alarmeren via pager</span><i>›</i><span>Karakteristieken</span><i>›</i><span>Eenheden kiezen</span><i>›</i><span>Verzenden</span></div>
+<div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Centralist</b><ul><li>Pagerbericht: maximaal 4 regels van 27 tekens</li><li>Karakteristieken kunnen de urgentie verhogen</li><li>Ook: vervolgbericht, herbezetten en intrekken</li><li>MK Overzicht heeft een knop Pager met de berichtenlijst</li></ul></div>
+<div class="c"><b>Brandweereenheid</b><ul><li>De pieper staat in het eigen paneel</li><li>Nieuw bericht: led knippert, toon herhaalt tot je bevestigt</li><li>◀ ▶ bladeren, ▮▮ bevestigen</li><li>Aan/uit-knop om de pieper uit te zetten</li></ul></div></div>
+<p class="m">Voorbeeld: <code>P 1 BNN-12 BR woning Dorpsstraat Zevenaar 075531</code></p></section>
 
 <section class="slide"><h2>Burgeraanvragen</h2><p class="m">In de zijbalk, altijd op prioriteit, met de wachttijd.</p>
 <div style="display:grid;gap:.8cqw">
@@ -75,7 +81,7 @@ ul{margin:0;padding-left:1.2em;display:grid;gap:.5cqw}
 
 <section class="slide"><h2>CaCo en OvD-OC, en handige tips</h2>
 <div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Leiding</b><ul><li>Calamiteit uitroepen met GRIP-niveau</li><li>Iedereen uitloggen</li><li>Incidenten overnemen</li><li>Testscenario’s om te oefenen</li></ul></div>
-<div class="c"><b>Tips</b><ul><li>Cijfertoetsen voor statussen</li><li>Parsertermen voor ambulance</li><li>Laat het geluid van je browser aan</li><li>MK Overzicht is alleen kijken</li></ul></div></div>
+<div class="c"><b>Tips</b><ul><li>Cijfertoetsen voor statussen</li><li>Parsertermen voor ambulance</li><li>Laat het geluid van je browser aan</li><li>MK Overzicht is alleen kijken, ook de Pager-lijst</li></ul></div></div>
 <p class="m">Hulp nodig? Neem contact op met de beheerder.</p></section>
 
 <div class="wait" id="wait"><div>De presentatie is nog niet gestart<small>Zodra de beheerder start, zie je hier automatisch de dia’s.</small></div></div>
