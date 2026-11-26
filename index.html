@@ -441,6 +441,16 @@ dialog::backdrop{background:rgba(2,8,12,.7)}
 .pgf-bg{display:block;margin:6px 0 0 auto;font-size:10px;color:#9a9a9a;cursor:pointer;background:none;border:0;padding:0}
 .pgf-det{grid-column:2;font-size:12px;color:#bbb}.pgf-det pre{margin:4px 0 0;font:700 13px/1.35 "Courier New",monospace;color:#9db8ff}
 @media(max-width:640px){.pgf-row{grid-template-columns:78px 1fr 30px;gap:8px}.pgf-title{font-size:16px}}
+
+#pgaOv{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);display:flex;align-items:flex-start;justify-content:center;padding:3vh 10px;overflow:auto}#pgaOv[hidden]{display:none}
+.pga{background:var(--surface,#fff);color:var(--ink,#111);width:100%;max-width:640px;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.4);overflow:hidden}
+.pga-h{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface-2,#e8eef5);font-weight:700}
+.pga-b{padding:12px 14px}.pga label.f{display:block;margin:10px 0 4px;font-weight:600}.pga input[type=text],.pga input[type=search]{width:100%}
+.pga-row{display:flex;gap:10px;align-items:center}
+.pga-list{max-height:260px;overflow:auto;border:1px solid var(--line,#ccc);border-radius:6px;margin-top:4px}
+.pga-u{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border-bottom:1px solid var(--line,#ddd);cursor:pointer}.pga-u small{display:block;color:var(--ink-2,#666);font-size:12px}
+.pga-prev{background:#fffbd6;color:#222;border:1px solid #d9d27a;border-radius:6px;padding:10px 12px;min-height:44px}.pga-prev small{display:block;color:#776;margin-top:4px}
+.pga-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.pga-l{font-size:13px;padding:4px 0;border-top:1px solid var(--line,#ddd)}.pga-l small{color:var(--ink-2,#666)}
 </style>
 </head>
 <body>
@@ -1774,11 +1784,12 @@ function pgPrep(rec,id){
 }
 function pgBonTxt(m){var n=+m.bon||0;return PAGER.prefix+'-'+(n<10?'0'+n:n);}
 function pgUnitCode(id){return String(id).replace(/-/g,'');}
+var PG_TERMS={"autom. brandmelding":"Autom. brandmelding","oms brandmelding":"OMS brandmelding","oms br beheerssysteem":"OMS beheerssysteem","pac brandmelding":"PAC brandmelding","oms drukknopmelding":"OMS drukknopmelding","oms handmelder":"OMS handmelder","autom. gev. stofmelding":"Autom. gev. stof","oms gevaarlijke stof":"OMS gev. stof","pac gevaarlijke stof":"PAC gev. stof","autom. systeemmelding":"Autom. syst.melding","hoogwateralarm":"Hoogwateralarm","co-melder":"CO-melder","luid / optisch rookmelder":"Rookmelder","tunnelalarm":"Tunnelalarm","weeralarm":"Weeralarm","brand":"Brand","brand bijgebouw":"BR bijgebouw","buitenbrand":"BR buiten","afvalbrand":"BR afval","berm- / bosschagebrand":"BR berm/bosschage","containerbrand":"BR container","buitenbrand industrie":"BR buiten industrie","brand gebouw":"BR gebouw","brand woning":"BR woning","brand bijeenkomst":"BR bijeenkomst","brand cel":"BR cel","brand gezondheidszorg":"BR gezondheidszorg","brand agrarisch":"BR agrarisch","brand industrie":"BR industrie","brand kantoor":"BR kantoor","brand logies":"BR logies","brand onderwijs":"BR onderwijs","brand sport":"BR sport","brand winkel":"BR winkel","brand overige gebouwen":"BR gebouw","brand luchtvaart":"BR luchtvaart","natuurbrand":"BR natuur","akkerbrand":"BR akker","bosbrand":"BR bos","duinbrand":"BR duin","heidebrand":"BR heide","rietbrand":"BR riet","veenbrand":"BR veen","brand scheepvaart":"BR scheepvaart","brand specifiek":"Brand","brandgerucht":"Brandgerucht","nablussen":"Nablussen","nacontrole brand":"Nacontrole","brand spoorvervoer":"BR spoorvervoer","brand wegvervoer":"BR wegvervoer","dienstverlening brandweer":"Dienstverlening","brandweer afstemverzoek":"Contact MKB","brandweer bijstand":"Bijstand","brandweer dienst aan derd":"Dienstverlening","brandweer geplande actie":"Geplande actie","brandweer herbez. / kazern.":"Herbezet./kazerneren","liftopsluiting":"Liftopsluiting","brandweeroefening":"Oefening","brandweer testmelding":"Testmelding","dienst door derden":"Dienstverlening","dienstverlening dieren":"Dier in problemen","dier in problemen":"Dier in problemen","dier in of op ijs":"Dier in/op ijs","dier in put / bassin / kelder":"Dier in put/kelder","dier op hoogte":"Dier op hoogte","dier te water":"Dier te water","dienstverlening multi":"Dienstverlening","multi afstemverzoek":"Contact MKB","buitensluiting":"Buitensluiting","multi geplande actie":"Geplande actie","multi oefening":"Oefening","overname meldkamer":"Contact MKB","multi testmelding":"Testmelding","uitval meldkamer":"Contact MKB","uitval systeem":"Contact MKB","reanimatie":"Reanimatie","stank / hinderlijke lucht":"Stank/hind. lucht","uitval nutsvoorziening":"Uitval nutsvoorz.","water / weer probleem":"Water-/weerprobl.","hoogwater":"Hoogwater","overstroming / dijkdoorbr.":"Overstr./dijkdoorbr.","stormschade":"Stormschade","warmte / droogte problemen":"Warmte-/droogteprobl","wateroverlast":"Wateroverlast","luchtvaartongeval":"LVO","crash luchtvaart":"LVO crash","luchtvaart gev. stof":"LVO gevaarlijke stof","noodsituatie luchtvaart":"LVO noodsituatie","luchtvaart ongeval overig":"LVO overig","luchtvaart voorzorg":"LVO voorzorg","ongeval spoor letsel":"Ongeval spoor","lek / zinken woonboot":"Lek/zinken woonboot","ongeval water letsel":"Ongeval water","persoon in drijfzand":"Persoon in drijfzand","persoon te water":"Persoon te water","schip / watersp. in probl.":"Ongeval op water","voertuig te water":"Voertuig te water"};
 function pgTerm(mc){
   var s=String(mc||'').trim();if(!s)return '';
   var e=lmcFind(s),pres=e?e[4]:s,k=lmcNorm(pres),k2=lmcNorm(s),out=null;
   String(PAGER.termen||'').split('\n').forEach(function(l){l=l.replace(/#.*$/,'').trim();var m=/^([^=]+)=(.+)$/.exec(l);if(!m)return;var kk=lmcNorm(m[1]);if(kk===k||kk===k2)out=m[2].trim();});
-  return out||pres.replace(/^Brand(?=\s)/,'BR');
+  return out||PG_TERMS[k]||PG_TERMS[k2]||pres.replace(/^Brand(?=\s)/,'BR');
 }
 function pgWrap(t){
   var words=String(t||'').replace(/\s+/g,' ').trim().split(' '),lines=[],cur='';
@@ -1789,9 +1800,9 @@ function pgWrap(t){
   });
   if(cur)lines.push(cur);return lines;
 }
-function pgBuild(rec,units){
+function pgBuild(rec,units,tov,noLoc){
   var pr=/^P\s?(\d)$/.exec(String(rec.urg||'').toUpperCase()),head='P '+(pr?pr[1]:'2')+' '+pgBonTxt(rec);
-  var term=pgTerm(rec.mc),street=String(rec.straat||'').trim(),pl=String(rec.plaats||'').trim(),uc=units.map(pgUnitCode);
+  var term=(tov!=null&&tov!=='')?String(tov).trim():pgTerm(rec.mc),street=noLoc?'':String(rec.straat||'').trim(),pl=noLoc?'':String(rec.plaats||'').trim(),uc=units.map(pgUnitCode);
   var mk=function(){return [head,term,street,pl,uc.join(' ')].filter(Boolean).join(' ');},fits=function(){return pgWrap(tx).length<=PG_ROWS;},tx=mk();
   while(!fits()&&street){street=street.length>6?street.slice(0,-1).replace(/\s+$/,''):'';tx=mk();}
   while(!fits()&&term.length>6){term=term.slice(0,-1).replace(/\s+$/,'');tx=mk();}
@@ -1799,11 +1810,11 @@ function pgBuild(rec,units){
   while(!fits()&&uc.length>1){uc.pop();tx=mk();}
   return fits()?tx:pgWrap(tx).slice(0,PG_ROWS).join(' ');
 }
-function pgSend(rec,units){
+function pgSend(rec,units,tov,kind,noLoc){
   if(!pgOn()||discOf(rec)!=='brandweer')return;
   var bu=units.filter(function(u){return UNITS[u]&&tabOf(UNITS[u].section)==='brandweer';});
   for(var i=0;i<bu.length;i+=8){
-    var ch=bu.slice(i,i+8),x={t:Date.now()+i/8,text:pgBuild(rec,ch),units:ch,kamer:role?role.name:''};
+    var ch=bu.slice(i,i+8),x={t:Date.now()+i/8,text:pgBuild(rec,ch,tov,noLoc),units:ch,k:kind||'alarm',kamer:role?role.name:''};
     rec.pager=(rec.pager||[]).concat([x]);
     logEvent('Pieper '+pgBonTxt(rec)+' verstuurd naar '+ch.join(', '));
   }
@@ -1843,9 +1854,91 @@ function pgMkWrap(ov){
 /* Centralist: BON en laatste pagertekst bij de melding */
 function pgLinkHtml(m){
   if(!pgOn()||!m||discOf(m)!=='brandweer'||!m.bon)return '';
+  var pid=ambSel||'';
   var p=m.pager||[],last=p[p.length-1];
-  return '<div class="alinks">Pieper <b>'+esc(pgBonTxt(m))+'</b> &middot; '+p.length+' bericht'+(p.length===1?'':'en')+(last?'<br><pre class="pgp">'+esc(pgWrap(last.text.toUpperCase()).join('\n'))+'</pre>':'')+'</div>';
+  return '<div class="alinks">Pieper <b>'+esc(pgBonTxt(m))+'</b> &middot; '+p.length+' bericht'+(p.length===1?'':'en')+(last?'<br><pre class="pgp">'+esc(pgWrap(last.text.toUpperCase()).join('\n'))+'</pre>':'')+'<br><button type="button" class="btn primary sm" data-pga="open" data-pgid="'+esc(pid)+'">Alarmeren via pager</button></div>';
 }
+
+/* Alarmeren via pager (dialoog) */
+var pga=null,pgaTimer=null;
+function pgaSel(){return pga?Object.keys(pga.sel).filter(function(k){return pga.sel[k];}):[];}
+function pgaList(){
+  var m=amb[pga.id],g=null,q=pga.q.toLowerCase();try{g=m.plaats?ambGeo(m.plaats):null;}catch(e){}
+  var l=ORDER.filter(function(id){return UNITS[id]&&tabOf(UNITS[id].section)==='brandweer';}).map(function(id){
+    var gg=null;try{var pk=kazPlace(id);gg=pk?ambGeo(pk):null;}catch(e){}
+    return {id:id,st:statusOf(id),km:(g&&gg)?ambKm(g,gg):null,i:pgUnitInfo(id)};
+  }).filter(function(u){return !q||(u.id+' '+u.i.kaz+' '+u.i.naam).toLowerCase().indexOf(q)>=0;});
+  l.sort(function(a,b){return (ambRank(a.st)-ambRank(b.st))||((a.km==null?999:a.km)-(b.km==null?999:b.km))||(a.id<b.id?-1:1);});
+  document.getElementById('pgaList').innerHTML=l.slice(0,80).map(function(u){
+    return '<label class="pga-u"><input type="checkbox" data-pgu="'+esc(u.id)+'"'+(pga.sel[u.id]?' checked':'')+'><span><b>'+esc(u.id)+'</b> &middot; '+esc(u.i.abbr)+' &middot; '+esc(u.i.kaz)+'<small>'+esc(ST[u.st].l)+(u.km!=null?' &middot; ca. '+u.km.toFixed(u.km<10?1:0).replace('.',',')+' km':'')+'</small></span></label>';
+  }).join('')||'<p class="m-none" style="padding:8px">Geen eenheden gevonden.</p>';
+}
+function pgaRefresh(){
+  var o=document.getElementById('pgaOv');if(!pga||!o||o.hidden)return;
+  var m=amb[pga.id];if(!m){pgaClose();return;}
+  var t=pgBuild(Object.assign({},m,{urg:pga.urg}),pgaSel(),pga.text),n=pgWrap(t).length;
+  document.getElementById('pgaPrev').innerHTML=esc(t)+'<small>'+t.length+' tekens &middot; '+n+' van '+PG_ROWS+' regels (max '+PG_COLS+' per regel)</small>';
+  var p=(m.pager||[]).slice().reverse();
+  document.getElementById('pgaLog').innerHTML=p.length?p.map(function(x){return '<div class="pga-l"><b>'+fmtTime(x.t)+'</b> '+esc(x.text)+'<br><small>'+esc(x.units.join(', '))+'</small></div>';}).join(''):'Nog geen brandweeralarm verzonden.';
+  document.getElementById('pgaIn').disabled=!(p.some(function(x){return (x.k||'alarm')==='alarm';})&&m.units.length);
+}
+function pgaClose(){var o=document.getElementById('pgaOv');if(o)o.hidden=true;pga=null;clearInterval(pgaTimer);}
+function pgaOpen(id){
+  var m=amb[id];if(!m)return;
+  pga={id:id,sel:{},q:'',text:pgTerm(m.mc),urg:/^P[123]$/.test(m.urg)?m.urg:'P2'};
+  var o=document.getElementById('pgaOv');if(!o){o=document.createElement('div');o.id='pgaOv';document.body.appendChild(o);}
+  o.hidden=false;
+  o.innerHTML='<div class="pga" role="dialog" aria-label="Brandweer alarmeren"><div class="pga-h"><span>Brandweer &middot; Alarmeren / intrekken</span><button type="button" class="btn sm" data-pga="close" aria-label="Sluiten">&times;</button></div><div class="pga-b">'+
+   '<div class="pga-row"><label>Urgentie <select id="pgaUrg">'+['P1','P2','P3'].map(function(p){return '<option'+(p===pga.urg?' selected':'')+'>'+p+'</option>';}).join('')+'</select></label><b>'+esc(pgBonTxt(m))+'</b></div>'+
+   '<label class="f" for="pgaText">Meldingstekst</label><input type="text" id="pgaText" maxlength="60" value="'+esc(pga.text)+'">'+
+   '<p class="m-none">Dichtstbijzijnde inzetbare voertuigen staan bovenaan. Afstanden zijn hemelsbreed.</p>'+
+   '<label class="f" for="pgaQ">Zoek kazerne of roepnummer</label><input type="search" id="pgaQ" autocomplete="off"><div class="pga-list" id="pgaList"></div>'+
+   '<label class="f">Pagerbericht</label><div class="pga-prev" id="pgaPrev"></div>'+
+   '<div class="pga-btns"><button type="button" class="btn primary" data-pga="alarm"'+(canWrite?'':' disabled')+'>Alarmeren via pager</button><button type="button" class="btn" data-pga="vervolg"'+(canWrite?'':' disabled')+'>Vervolgbericht zonder inzet</button><button type="button" class="btn" data-pga="herbez"'+(canWrite?'':' disabled')+'>Herbezetten</button><button type="button" class="btn" id="pgaIn" data-pga="intrek">Intrekken</button></div>'+
+   '<p style="margin:14px 0 4px"><b>Verzonden alarmen</b></p><div id="pgaLog"></div></div></div>';
+  pgaList();pgaRefresh();clearInterval(pgaTimer);pgaTimer=setInterval(pgaRefresh,1500);
+}
+async function pgaDo(kind){
+  var m=amb[pga.id];if(!m||!canWrite)return;
+  var u=pgaSel(),tov=pga.text,noLoc=false,id=pga.id;
+  if(!u.length){toast('Kies eerst een eenheid.');return;}
+  if(kind==='herbez'){tov='HERBEZETTEN';noLoc=true;}
+  if(kind==='intrek'){u=u.filter(function(x){return m.units.indexOf(x)>=0;});if(!u.length){toast('Kies een eenheid die gealarmeerd is.');return;}tov='INTREKKEN';noLoc=true;}
+  try{
+    var rec=Object.assign({},m);rec.log=(m.log||[]).slice();rec.units=m.units.slice();
+    if(kind==='alarm'){rec.urg=pga.urg;u.forEach(function(x){if(rec.units.indexOf(x)<0)rec.units.push(x);});}
+    if(kind==='intrek')rec.units=rec.units.filter(function(x){return u.indexOf(x)<0;});
+    pgSend(rec,u,tov,kind,noLoc);
+    ambLog(rec,'UITGIFTE',({alarm:'Pageralarm',vervolg:'Vervolgbericht',herbez:'Herbezetten',intrek:'Intrekken'})[kind]+': '+u.join(', '));
+    await writeAmb(id,rec);
+    for(var i=0;i<u.length;i++){
+      var x=u[i],st=statusOf(x),d=data[x];
+      if(kind==='alarm'){if(st==='2'||st==='3')ambStamp(x,st,id,rec);else await write(x,Object.assign({},d||{names:[],note:''},{status:'2',since:Date.now()}));}
+      if(kind==='intrek'&&(st==='2'||st==='3'))await write(x,Object.assign({},d||{names:[],note:''},{status:'1',since:Date.now()}));
+    }
+    pga.sel={};pgaList();pgaRefresh();toast(({alarm:'Gealarmeerd via pager',vervolg:'Vervolgbericht verzonden',herbez:'Herbezetten verzonden',intrek:'Ingetrokken'})[kind]);
+  }catch(e){onWriteError(e);}
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-pga]'),o=document.getElementById('pgaOv');
+  if(o&&e.target===o){pgaClose();return;}
+  if(!b)return;var a=b.getAttribute('data-pga');
+  if(a==='open'){pgaOpen(b.getAttribute('data-pgid'));return;}
+  if(a==='close'){pgaClose();return;}
+  if(pga)pgaDo(a);
+});
+document.addEventListener('input',function(e){
+  if(!pga)return;var t=e.target;
+  if(t.id==='pgaText'){pga.text=t.value;pgaRefresh();}
+  else if(t.id==='pgaQ'){pga.q=t.value;pgaList();}
+});
+document.addEventListener('change',function(e){
+  if(!pga)return;var t=e.target;
+  if(t.id==='pgaUrg'){pga.urg=t.value;pgaRefresh();}
+  else if(t.hasAttribute&&t.hasAttribute('data-pgu')){pga.sel[t.getAttribute('data-pgu')]=t.checked;pgaRefresh();}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&pga)pgaClose();});
+
 /* Eenheid: de pieper zelf */
 function pgPow(id){try{return localStorage.getItem('gms-pg|'+id)!=='uit';}catch(e){return true;}}
 function pgMine(id){return pgAll().filter(function(o){return o.x.units.indexOf(id)>=0;}).slice(0,30);}
