@@ -95,6 +95,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <h3>Spraakaanvragen van eenheden</h3>
 <p>In de zijbalk staat de lijst <strong>Spraakaanvragen</strong>. De volgorde is vast: eerst de noodknop (0), dan urgent (7), dan spraak (6) en tot slot melding eigen initiatief (8).</p>
 <div class="tip">Brandweereenheden hebben een eigen paneel met tegels. <strong>Ingerukt</strong>, <strong>Beschikbaar</strong> en <strong>Op kazerne</strong> tellen alle drie als status 1. Op het bord zie je bij zo’n eenheid erbij welke tegel gekozen is, bijvoorbeeld “Inzetbaar · Op kazerne”. Onderaan het paneel staan ook <strong>Noodknop</strong>, <strong>Eigen melding</strong>, <strong>Informatie</strong> en <strong>Uitmelden</strong>.</div>
+<div class="tip"><strong>Pieper:</strong> brandweereenheden zien in hun paneel ook een pieper. Bij een nieuw bericht knippert de rode led en klinkt een toon, die zich elke paar seconden herhaalt tot je het bericht bevestigt met <strong>▮▮</strong> (of na ongeveer twee minuten vanzelf stopt). Met <strong>◀</strong> ga je naar een ouder bericht, met <strong>▶</strong> naar een nieuwer bericht. De knop <strong>▮▮</strong> bevestigt het bericht en stopt het knipperen. Met de ronde aan/uit-knop zet je de pieper uit of aan. Je pieper toont alleen berichten waarin jouw roepnummer staat.</div>
 </section>
 
 <section id="uitgifte"><h2><b>3</b>Uitgifte van een ambulance</h2>
@@ -124,7 +125,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <li><b>Nieuwe melding</b>Open de tab van je dienst (Brandweer, Politie of KMar). Zoek in het zoekvak op naam, parserterm of omschrijving: alle meldingsclassificaties en parsertermen van de LMC 12.0 zitten erin, ook alternatieve termen zoals <em>-brand aanleunwoning</em>. Bij een keuze zie je de beschrijving van de classificatie. De standaardprioriteit uit de LMC wordt meteen ingevuld (P1 tot en met P3 bij brandweer, P1 tot en met P5 bij politie). Je kunt ook een parserterm intypen als commando, bijvoorbeeld <code>-brand woning</code>. Bij <em>Plaats</em> kies je uit de lijst: Zevenaar, Babberich, Groot-Holthuizen en Didam (Nederland), en Feldhuisen en Elten (Duitsland). Een andere plaats is niet mogelijk.</li>
 <li><b>Opslaan</b>De melding komt onder <em>Openstaande incidenten</em>, wachtend op uitgifte.</li>
 <li><b>Inzetvoorstel bekijken</b>Het systeem stelt de handigste eenheid voor, afhankelijk van de soort melding (zie hieronder).</li>
-<li><b>Alarmeren</b>Klik <em>Alarmeer</em>. De eenheid wordt gekoppeld en gaat naar <strong>status 2 (Aanrijdend)</strong>. Een eenheid die al bij een andere melding hoort, wordt niet nog eens voorgesteld.</li>
+<li><b>Alarmeren</b>Klik <em>Alarmeer</em>. De eenheid wordt gekoppeld en gaat naar <strong>status 2 (Aanrijdend)</strong>. Een eenheid die al bij een andere melding hoort, wordt niet nog eens voorgesteld. Bij de brandweer kun je ook alarmeren via de pieper (zie hieronder).</li>
 <li><b>Opschalen</b>Heb je ook een andere dienst nodig, bijvoorbeeld een ambulance bij een verkeersongeval? Kies onder de incidentkaart de dienst en klik <em>Opschalen</em>. Er komt een nieuwe melding bij die dienst met het adres en de melder, en beide meldingen verwijzen naar elkaar. De andere dienst vult zelf de classificatie in.</li>
 <li><b>Tijden en historie</b>Je legt per eenheid <em>Uit</em>, <em>Terp</em> en <em>Vrij</em> vast. Alles komt in de historie.</li>
 <li><b>Afronden</b>Klik <em>Sluit incident</em>. De eenheden behouden hun status, dus zet ze zelf terug op status 1 als ze weer beschikbaar zijn.</li>
@@ -134,6 +135,17 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <div class="card"><h3>Voorstel politie en KMar</h3><p>Het type eenheid past bij de melding: bij geweld of een inbraak op heterdaad <strong>Noodhulp</strong>, bij een verkeersongeval <strong>Team verkeer</strong>, bij vermissing een <strong>hondeleider</strong>, bij overlast de <strong>wijkagent</strong>. Heeft de beheerder voor eenheden een <strong>standplaats</strong> ingesteld, dan staat de dichtstbijzijnde eenheid van het passende type bovenaan, met de afstand in km. Zonder standplaats kiest het voorstel alleen op type en beschikbaarheid. <strong>KMar</strong> staat voorop bij grens- of luchthavenmeldingen en anders achteraan. Hangen er <strong>meer dan 3 politie-eenheden</strong> aan de melding, dan wordt ook een <strong>OVD-P</strong> voorgesteld.</p></div>
 </div>
 <div class="tip">Alleen eenheden met status 1 of 4 worden voorgesteld. Een eenheid op status 2 of 3, of die al aan een andere melding hangt, ontbreekt dus. Je kunt altijd zelf een eenheid koppelen.</div>
+<h3>Brandweer alarmeren via de pieper</h3>
+<p>Brandweermeldingen krijgen een <strong>BON</strong>, bijvoorbeeld <em>BNN-01</em>. De BON telt per melding op: 1, 2, 3 enzovoort. Is een melding afgerond, dan kan die BON opnieuw worden gebruikt. Bij een brandweermelding staat de knop <strong>Alarmeren via pager</strong>. Zie je die knop niet, dan staat de pieper niet aan. Vraag het dan aan de beheerder.</p>
+<ol class="steps">
+<li><b>Urgentie en meldingstekst</b>Het scherm toont de BON, de urgentie (P1 tot en met P3) en de meldingstekst. Die tekst komt uit de LMC, bijvoorbeeld <em>BR woning</em>, en je kunt hem aanpassen.</li>
+<li><b>Karakteristieken</b>Zoek en kies karakteristieken, bijvoorbeeld <em>Gaslekkage</em> of <em>Afstemverzoek</em>. Ze komen in het pagerbericht, voor of na de meldingstekst. Heeft een karakteristiek een hogere basisprioriteit, dan gaat de urgentie vanzelf omhoog. Pas je de urgentie zelf aan, dan blijft jouw keuze staan.</li>
+<li><b>Eenheden kiezen</b>Zoek op kazerne of roepnummer en vink de eenheden aan. De beschikbare eenheden die het dichtstbij zijn staan bovenaan, met de afstand hemelsbreed in km.</li>
+<li><b>Pagerbericht controleren</b>In het gele vak zie je precies wat de pieper krijgt, bijvoorbeeld <code>P 1 BNN-12 BR woning Dorpsstraat Zevenaar 075531</code>. Een bericht heeft maximaal <strong>4 regels van 27 tekens</strong>. Is het te lang, dan wordt eerst de straat ingekort, daarna de karakteristieken. De meldingstekst en de eenheden blijven altijd staan.</li>
+<li><b>Verzenden</b>Kies een knop. <em>Alarmeren via pager</em> koppelt de eenheden aan de melding en zet ze op status 2 (Aanrijdend). <em>Vervolgbericht zonder inzet</em> stuurt alleen tekst. <em>Herbezetten</em> stuurt een bericht om de kazerne te bezetten. <em>Intrekken</em> werkt alleen voor eenheden die gealarmeerd zijn: ze krijgen een bericht, worden losgekoppeld en gaan terug naar status 1.</li>
+<li><b>Verzonden alarmen</b>Onderaan staat de lijst met alle berichten van deze melding.</li>
+</ol>
+<div class="tip">De urgentie en meldingstekst in dit scherm gelden voor de pieper. De losse knop <em>Alarmeer</em> bij een eenheid stuurt ook een pagerbericht.</div>
 <p>De oude tab Meldingen is vervangen door deze incidenten. Staan er nog oude open meldingen, dan zie je tijdelijk de tab <strong>Oude meldingen</strong>. De beheerder zet ze om naar incidenten, waarna de tab vanzelf verdwijnt. Een melding van een eenheid (status 8, eigen initiatief) komt ook als incident binnen, met de eenheid al gekoppeld.</p>
 </section>
 
@@ -181,7 +193,7 @@ footer{text-align:center;color:var(--mute);font-size:13px;padding:0 20px 40px}
 <div class="grid">
 <div class="card"><h3>Sneller werken</h3><p>Gebruik de cijfertoetsen voor statussen en de parsertermen voor ambulance-meldingen.</p></div>
 <div class="card"><h3>Geluid</h3><p>Nieuwe meldingen, noodknoppen en burgeraanvragen geven een geluid. Laat het geluid van je browser aan staan.</p></div>
-<div class="card"><h3>Alleen kijken</h3><p>Met <em>MK Overzicht</em> kun je meekijken zonder iets te wijzigen. Handig voor leidinggevenden of observatoren.</p></div>
+<div class="card"><h3>Alleen kijken</h3><p>Met <em>MK Overzicht</em> kun je meekijken zonder iets te wijzigen. Handig voor leidinggevenden of observatoren. Staat de pieper aan, dan heeft MK Overzicht een knop <strong>Pager</strong>. Die toont de lijst met alle brandweerberichten: tijd, kamer, de berichttekst, de gealarmeerde eenheden en een knop om het bericht te kopiëren. Met <em>Berichtgegevens</em> zie je het bericht zoals het op de pieper staat.</p></div>
 <div class="card"><h3>Hulp nodig?</h3><p>Werkt een scherm niet of ontbreekt een wachtwoord? Neem contact op met de beheerder.</p></div>
 </div>
 </section>
