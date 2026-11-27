@@ -81,7 +81,7 @@ code{font-family:ui-monospace,Consolas,monospace;background:rgba(255,255,255,.12
 
 <section class="slide"><h2>CaCo en OvD-OC, en handige tips</h2>
 <div class="g" style="grid-template-columns:1fr 1fr"><div class="c"><b>Leiding</b><ul><li>Calamiteit uitroepen met GRIP-niveau</li><li>Iedereen uitloggen</li><li>Incidenten overnemen</li><li>Testscenario’s om te oefenen</li></ul></div>
-<div class="c"><b>Tips</b><ul><li>Cijfertoetsen voor statussen</li><li>Parsertermen voor ambulance</li><li>Laat het geluid van je browser aan</li><li>MK Overzicht is alleen kijken, ook de Pager-lijst</li></ul></div></div>
+<div class="c"><b>Tips</b><ul><li>Cijfertoetsen voor statussen</li><li>Parsertermen voor ambulance</li><li>Parsertermen uitklappen: alle termen op een tweede scherm</li><li>Laat het geluid van je browser aan</li><li>MK Overzicht is alleen kijken, ook de Pager-lijst</li></ul></div></div>
 <p class="m">Hulp nodig? Neem contact op met de beheerder.</p></section>
 
 <div class="wait" id="wait"><div>De presentatie is nog niet gestart<small>Zodra de beheerder start, zie je hier automatisch de dia’s.</small></div></div>
@@ -170,5 +170,28 @@ function closeP(){p.hidden=true;b.hidden=false;clearInterval(timer);}
 b.onclick=openP;$('gq-x').onclick=closeP;$('gq-s').onclick=send;
 })();
 </script>
+<script>(function gmsClosedGuard(c){
+  var ov=null,msg=null,sb=null;
+  function build(){
+    ov=document.createElement('div');ov.setAttribute('role','alert');
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:#040b10;color:#e8f3f4;font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif';
+    ov.innerHTML='<div style="max-width:520px;border:1px solid rgba(45,212,191,.35);padding:32px;background:rgba(7,20,26,.95)"><div style="font:700 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;color:#5eead4">GMS</div><h1 style="margin:10px 0 8px;font-size:28px;color:#fff">Systeem gesloten</h1><p style="margin:0;color:#9fc4c6"></p></div>';
+    msg=ov.querySelector('p');document.documentElement.appendChild(ov);
+  }
+  function apply(d){
+    var on=!!(d&&d.aan&&d.gesloten);if(!ov)build();
+    ov.style.display=on?'flex':'none';if(on)msg.textContent=d.bericht||'Het systeem is gesloten.';
+    try{document.body.inert=on;}catch(e){}
+  }
+  function pull(){return sb.from('docs').select('data').eq('collection','instellingen').eq('id','onderhoud').maybeSingle().then(function(r){if(r&&!r.error)apply(r.data&&r.data.data);});}
+  import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(function(m){
+    sb=m.createClient(c.url,c.key);pull();
+    sb.channel('gms-closed-'+Math.random().toString(36).slice(2)).on('postgres_changes',{event:'*',schema:'public',table:'docs'},function(p){
+      if(p.eventType==='DELETE'){pull();return;}
+      var r=p.new||{};if(r.collection==='instellingen'&&r.id==='onderhoud')apply(r.data);
+    }).subscribe();
+    setInterval(pull,30000);
+  }).catch(function(){});
+})({"url": "https://amytotkfjihycrdmlxdp.supabase.co", "key": "sb_publishable_bztsVfpk9adjtlQsr213rQ_4QMlQxrW"});</script>
 </body>
 </html>
