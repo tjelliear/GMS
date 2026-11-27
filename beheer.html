@@ -376,10 +376,14 @@ function vBak(){
       '<div class="row"><label class="mono"><input type="checkbox" id="mkU" checked> Alle ingelogde eenheden uitmelden en uitloggen ('+mkU.length+' in dienst, '+mkS.length+' aangemelde schermen)</label></div>'+
       '<div class="row"><label class="mono"><input type="checkbox" id="mkB"> Openstaande burgeraanvragen verwijderen ('+mkB.length+')</label></div>'+
       '<div class="row" style="margin-top:8px"><button class="btn danger mono" data-a="mkclean">Meldkamer opschonen</button></div></div></div>';
-    const G=[['gegevens','Gegevens en back-up',['mkclean','soort','backup','oude','opruim','test']],['meldingen','Meldingen en lijsten',['pieper','plaatsen','stand','polnr']],['toegang','Toegang en systeem',['onderhoud','onderdelen','wachtwoorden','live']]];
+    const sU=docs('units').filter(x=>(x.d.status&&x.d.status!=='uit')||(x.d.names||[]).length).length,sS=docs('aanwezig').length,sM=docs('ambmeldingen').filter(x=>!x.d.closed).length+docs('meldingen').filter(x=>!x.d.closed).length;
+    P.sluit='<div class="panel"><h3>Systeem sluiten<small>'+(OM().aan&&OM().gesloten?'GESLOTEN':'open')+'</small></h3><div class="pb"><p class="muted" style="margin-top:0">Sluit het hele systeem. Iedereen ziet <b>Systeem gesloten</b> en niemand kan het omzeilen. Ook de handleiding, de presentatie en de parsertermen zijn dan dicht. Alle aangemelde gebruikers en eenheden worden uitgelogd, en alle open meldingen, burgeraanvragen, calamiteiten en berichten worden verwijderd. Afgesloten meldingen, het logboek, de instellingen, parsertermen en eigen roepnummers blijven. Dit beheerscherm blijft bereikbaar.</p>'+
+      '<p class="muted">Nu: '+sS+' aangemelde schermen, '+sU+' eenheden in dienst, '+sM+' open meldingen.</p>'+field('Bericht op het scherm',inp('sBericht',OM().gesloten?(OM().bericht||''):'','Het systeem is gesloten.'))+
+      '<div class="row"><button class="btn danger mono" data-a="sluit">Sluit systeem</button><button class="btn primary mono" data-a="sopen">Open systeem</button></div></div></div>';
+    const G=[['gegevens','Gegevens en back-up',['mkclean','soort','backup','oude','opruim','test']],['meldingen','Meldingen en lijsten',['pieper','plaatsen','stand','polnr']],['toegang','Toegang en systeem',['sluit','onderhoud','onderdelen','wachtwoorden','live']]];
     if(!G.some(g=>g[0]===S.sub))S.sub='gegevens';
     const chip=(sub,txt,st)=>'<button type="button" class="chip '+st+'" data-sub="'+sub+'"><i></i>'+txt+'</button>';
-    const strip='<div class="chips">'+chip('toegang','Systeem: '+(OM().aan?'OFFLINE':'online'),OM().aan?'warn':'ok')+chip('meldingen','Pieper: '+(PG().aan?'aan':'uit'),PG().aan?'ok':'off')+chip('toegang','Live presentatie: '+(PR().aan?'live':'uit'),PR().aan?'ok':'off')+(t?chip('gegevens',t+' testgegevens','warn'):'')+'</div>';
+    const strip='<div class="chips">'+chip('toegang','Systeem: '+(OM().aan?(OM().gesloten?'GESLOTEN':'OFFLINE'):'online'),OM().aan?'warn':'ok')+chip('meldingen','Pieper: '+(PG().aan?'aan':'uit'),PG().aan?'ok':'off')+chip('toegang','Live presentatie: '+(PR().aan?'live':'uit'),PR().aan?'ok':'off')+(t?chip('gegevens',t+' testgegevens','warn'):'')+'</div>';
     const tabs='<div class="tabs" role="tablist">'+G.map(g=>'<button type="button" role="tab" aria-selected="'+(S.sub===g[0])+'" class="tab'+(S.sub===g[0]?' on':'')+'" data-sub="'+g[0]+'">'+g[1]+'</button>').join('')+'</div>';
     const act=G.find(g=>g[0]===S.sub);
     return cards+strip+tabs+'<div class="grid2">'+act[2].map(k=>P[k]).join('')+'</div>';}};
@@ -470,6 +474,18 @@ async function onAct(a,id){
       for(const s of uS)await put('aanwezig',s.id,Object.assign({},s.d,{kick:true}));
       await logAdmin('Meldkamer opgeschoond: '+tx.trim());
     },'Meldkamer opgeschoond');}
+  if(a==='sopen'){return run(async()=>{await put('instellingen','onderhoud',{aan:false,bericht:'',sinds:Date.now()});await logAdmin('Systeem weer geopend');},'Systeem is weer open');}
+  if(a==='sluit'){const b=($('sBericht')||{value:''}).value.trim().slice(0,300)||'Het systeem is gesloten.';
+    const mO=docs('ambmeldingen').filter(x=>!x.d.closed).map(x=>x.id),mP=docs('meldingen').filter(x=>!x.d.closed).map(x=>x.id),bB=docs('burgermeldingen').filter(x=>x.d.status!=='klaar').map(x=>x.id),cC=docs('calamiteiten').map(x=>x.id),bR=docs('berichten').map(x=>x.id),uU=docs('units').filter(x=>(x.d.status&&x.d.status!=='uit')||(x.d.names||[]).length),uS=docs('aanwezig');
+    if(!confirm('Het systeem sluiten?\n\n- '+uS.length+' aangemelde schermen worden uitgelogd\n- '+uU.length+' eenheden worden uitgemeld\n- '+(mO.length+mP.length)+' open meldingen, '+bB.length+' burgeraanvragen, '+cC.length+' calamiteiten en '+bR.length+' berichten worden verwijderd\n\nDit kan niet ongedaan worden gemaakt.'))return;
+    if((prompt('Typ SLUITEN om te bevestigen.')||'').trim().toUpperCase()!=='SLUITEN'){toast('Systeem niet gesloten.');return;}
+    return run(async()=>{
+      await put('instellingen','onderhoud',{aan:true,gesloten:true,bericht:b,sinds:Date.now()});
+      for(const s of uS)await put('aanwezig',s.id,Object.assign({},s.d,{kick:true}));
+      if(mO.length)await delMany('ambmeldingen',mO);if(mP.length)await delMany('meldingen',mP);if(bB.length)await delMany('burgermeldingen',bB);if(cC.length)await delMany('calamiteiten',cC);if(bR.length)await delMany('berichten',bR);
+      for(const u of uU){const n=Object.assign({},u.d,{status:'uit',names:[],note:''});delete n.melding;delete n.since;await put('units',u.id,n);}
+      await logAdmin('Systeem gesloten: '+uS.length+' schermen uitgelogd, '+uU.length+' eenheden uitgemeld, '+(mO.length+mP.length)+' meldingen verwijderd');
+    },'Systeem is gesloten');}
   if(a==='sset'){const pref=$('sPref').value,team=$('sTeam').value.trim();if(!/^\d{2}$/.test(team)){toast('Basisteam: precies 2 cijfers.');return;}return run(async()=>{await put('instellingen','politie',{pref,team});await logAdmin('Politie-nummering gewijzigd: ON'+pref+'-xx, basisteam ON'+team+'-xx');},'Nummering opgeslagen');}
   if(a==='uedit'){const u=unitRows().find(x=>x.id===id);if(!u)return;const d=u.d||{};
     const m=await modal('Eenheid '+id,field('Status','<select id="uSt">'+opts(ST,u.st)+'</select>')+field('Bemanning (een naam per regel)','<textarea id="uNames">'+esc((d.names||[]).join('\n'))+'</textarea>')+field('Opmerking',inp('uNote',d.note||'')),'Opslaan');
