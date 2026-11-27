@@ -1016,7 +1016,7 @@ function enforceParts(){
     lmsRender();
   }
 }
-var maintOn=false,maintMsg='',maintBypass=false,gateMk=false,gateBg=false;try{maintBypass=sessionStorage.getItem('gms-maint-bypass')==='1';gateMk=sessionStorage.getItem('gms-gate-m')==='1';gateBg=sessionStorage.getItem('gms-gate-b')==='1';}catch(e){}
+var maintOn=false,maintClosed=false,maintMsg='',maintBypass=false,gateMk=false,gateBg=false;try{maintBypass=sessionStorage.getItem('gms-maint-bypass')==='1';gateMk=sessionStorage.getItem('gms-gate-m')==='1';gateBg=sessionStorage.getItem('gms-gate-b')==='1';}catch(e){}
 var gateOk=false;try{gateOk=sessionStorage.getItem('gms-gate')==='1';}catch(e){}  /* centralistenscherm ontgrendeld in deze sessie */
 var PROTECTED_ROLES=['caco','ovd'];  /* rollen die een wachtwoord vragen (in te stellen via beheer.html) */
 var PW_HASH={};  /* wachtwoorden staan niet meer in de code: aanmelden gaat via Supabase Auth */
@@ -2026,6 +2026,29 @@ function ptChild(DATA){
   poll();setInterval(poll,1500);draw();$('q').focus();
 }
 var PT_CSS='*{box-sizing:border-box}html{background:#040b10;color-scheme:dark}body{margin:0;color:#e8f3f4;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background-color:#040b10;background-image:linear-gradient(rgba(45,212,191,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(45,212,191,.045) 1px,transparent 1px);background-size:36px 36px;background-attachment:fixed}header{background:rgba(4,11,16,.94);border-bottom:1px solid rgba(45,212,191,.2);padding:12px 24px}h1{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em;color:#fff}.w{max-width:1060px;margin:0 auto;padding:16px 24px 40px}p{color:#9fc4c6}.box{border:1px solid rgba(45,212,191,.22);border-left:4px solid #5e6b80;background:rgba(7,20,26,.92);padding:10px 14px;margin:12px 0;color:#9fc4c6}.box.ok{border-left-color:#43c47a;color:#e8f3f4}.f{display:grid;grid-template-columns:1fr 190px 190px;gap:12px;margin:14px 0 8px}label{display:block;margin-bottom:4px;font:700 11px ui-monospace,JetBrains Mono,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase;color:#5eead4}input,select{width:100%;height:42px;padding:0 12px;font:inherit;color:#fff;background:#07141a;border:1px solid rgba(45,212,191,.35);border-radius:2px}input::placeholder{color:#6b9396}.n{display:flex;justify-content:space-between;padding:14px 0 6px;border-bottom:1px solid rgba(45,212,191,.2);color:#9fc4c6;font:700 11px ui-monospace,JetBrains Mono,Menlo,Consolas,monospace;letter-spacing:.1em;text-transform:uppercase}.r{display:grid;grid-template-columns:260px 1fr auto;gap:14px;align-items:center;background:rgba(7,20,26,.92);border:1px solid rgba(45,212,191,.22);border-top:0;padding:10px 12px}.r:hover{background:rgba(11,30,38,.95)}code{font:700 13px/1.5 ui-monospace,JetBrains Mono,Menlo,Consolas,monospace;color:#5eead4;word-break:break-word}.mn b{color:#fff}.mn small{display:block;color:#9fc4c6;font-size:12px}.bt{display:flex;gap:8px}button{height:34px;padding:0 12px;font:12px ui-monospace,JetBrains Mono,Menlo,Consolas,monospace;letter-spacing:.07em;text-transform:uppercase;border:1px solid rgba(31,184,165,.55);border-radius:2px;background:rgba(14,60,62,.55);color:#e8fffb;cursor:pointer}button:hover:not(:disabled){background:rgba(20,90,90,.8);border-color:#2dd4bf}button:disabled{opacity:.4;cursor:not-allowed}.more{display:block;margin:14px auto}.none{padding:20px;color:#9fc4c6}#tt{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#2dd4bf;color:#031a17;padding:8px 16px;border-radius:2px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none}#tt.on{opacity:1}@media(max-width:760px){.f{grid-template-columns:1fr}.r{grid-template-columns:1fr}}';
+function gmsClosedGuard(c){
+  var ov=null,msg=null,sb=null;
+  function build(){
+    ov=document.createElement('div');ov.setAttribute('role','alert');
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:#040b10;color:#e8f3f4;font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif';
+    ov.innerHTML='<div style="max-width:520px;border:1px solid rgba(45,212,191,.35);padding:32px;background:rgba(7,20,26,.95)"><div style="font:700 12px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;color:#5eead4">GMS</div><h1 style="margin:10px 0 8px;font-size:28px;color:#fff">Systeem gesloten</h1><p style="margin:0;color:#9fc4c6"></p></div>';
+    msg=ov.querySelector('p');document.documentElement.appendChild(ov);
+  }
+  function apply(d){
+    var on=!!(d&&d.aan&&d.gesloten);if(!ov)build();
+    ov.style.display=on?'flex':'none';if(on)msg.textContent=d.bericht||'Het systeem is gesloten.';
+    try{document.body.inert=on;}catch(e){}
+  }
+  function pull(){return sb.from('docs').select('data').eq('collection','instellingen').eq('id','onderhoud').maybeSingle().then(function(r){if(r&&!r.error)apply(r.data&&r.data.data);});}
+  import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(function(m){
+    sb=m.createClient(c.url,c.key);pull();
+    sb.channel('gms-closed-'+Math.random().toString(36).slice(2)).on('postgres_changes',{event:'*',schema:'public',table:'docs'},function(p){
+      if(p.eventType==='DELETE'){pull();return;}
+      var r=p.new||{};if(r.collection==='instellingen'&&r.id==='onderhoud')apply(r.data);
+    }).subscribe();
+    setInterval(pull,30000);
+  }).catch(function(){});
+}
 function pgTermDoc(){
   return '<!doctype html><html lang="nl"><head><meta charset="utf-8"><title>Parsertermen</title><style>'+PT_CSS+'</style></head><body><header><h1>Parsertermen</h1></header><div class="w">'+
     '<p style="margin:0">Sleep dit venster naar een tweede scherm. Zoek een term, kopieer de code of pas een term van je eigen dienst toe op de geselecteerde melding.</p>'+
@@ -2034,7 +2057,7 @@ function pgTermDoc(){
     '<div><label for="d">Dienst</label><select id="d"><option value="">Alle diensten</option><option value="ambulance">Ambulance</option><option value="brandweer">Brandweer</option><option value="politie">Politie en KMar</option></select></div>'+
     '<div><label for="s">Soort</label><select id="s"><option value="">Alle termen</option><option value="std">Standaard (LMC)</option><option value="eigen">Eigen termen</option></select></div></div>'+
     '<div class="n"><span id="n"></span><span>Code \u00b7 betekenis</span></div><div id="list"></div></div><div id="tt"></div>'+
-    '<script>('+ptChild.toString()+')('+JSON.stringify(pgTermData()).replace(/</g,'\\u003c')+');<\/script></body></html>';
+    '<script>('+gmsClosedGuard.toString()+')('+JSON.stringify({url:SUPABASE_CONFIG.url,key:SUPABASE_CONFIG.key})+');<\/script><script>('+ptChild.toString()+')('+JSON.stringify(pgTermData()).replace(/</g,'\\u003c')+');<\/script></body></html>';
 }
 function pgTermDl(){
   if(!role||role.id!=='ovd')return;
@@ -3603,7 +3626,7 @@ async function init(){
       if(ambSel&&!amb[ambSel]){ambSel=null;}
       render();
     },fail);
-    db.collection('instellingen').onSnapshot(function(snap){var seenM=false,seenP=false,seenS=false,seenL=false,seenG=false;snap.docs.forEach(function(d){if(d.id==='pager'){seenG=true;PAGER=normPager(d.data());}if(d.id==='plaatsen'){seenL=true;var pp=parsePlaatsen((d.data()||{}).tekst);if(pp.length)PLAATSEN_OK=pp;}if(d.id==='standplaatsen'){seenS=true;POL_RULES=parsePlaatsRules((d.data()||{}).tekst);}if(d.id==='onderdelen'){seenP=true;var pd=d.data()||{};PART={};PART_KEYS.forEach(function(k){var x=pd[k]||{};PART[k]={uit:!!x.uit,zonderww:!!x.zonderww};});}if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenG)PAGER=normPager(null);if(!seenM)maintOn=false;if(!seenP)PART={};if(!seenS)POL_RULES=[];if(!seenL)PLAATSEN_OK=parsePlaatsen(PLAATS_DEF);renderMaint();render();enforceParts();},function(){});
+    db.collection('instellingen').onSnapshot(function(snap){var seenM=false,seenP=false,seenS=false,seenL=false,seenG=false;snap.docs.forEach(function(d){if(d.id==='pager'){seenG=true;PAGER=normPager(d.data());}if(d.id==='plaatsen'){seenL=true;var pp=parsePlaatsen((d.data()||{}).tekst);if(pp.length)PLAATSEN_OK=pp;}if(d.id==='standplaatsen'){seenS=true;POL_RULES=parsePlaatsRules((d.data()||{}).tekst);}if(d.id==='onderdelen'){seenP=true;var pd=d.data()||{};PART={};PART_KEYS.forEach(function(k){var x=pd[k]||{};PART[k]={uit:!!x.uit,zonderww:!!x.zonderww};});}if(d.id==='onderhoud'){seenM=true;var o=d.data()||{};maintOn=!!o.aan;maintClosed=!!o.gesloten;maintMsg=typeof o.bericht==='string'?o.bericht:'';}if(d.id==='wachtwoorden'){var w=d.data()||{};PW_HASH={};PROTECTED_ROLES.concat(['centralist','mkov','bypass','burger']).forEach(function(k){if(typeof w[k]==='string'&&w[k])PW_HASH[k]=w[k];});}if(d.id==='politie'){var v=d.data()||{};CFGP={pref:/^\d{2}$/.test(v.pref)?v.pref:'00',team:/^\d{2}$/.test(v.team)?v.team:'49'};}});if(!seenG)PAGER=normPager(null);if(!seenM){maintOn=false;maintClosed=false;}if(!seenP)PART={};if(!seenS)POL_RULES=[];if(!seenL)PLAATSEN_OK=parsePlaatsen(PLAATS_DEF);renderMaint();render();enforceParts();},function(){});
     CUSTOM_SECS.forEach(function(sec){
       db.collection(sec.id).onSnapshot(function(snap){
         var nd={};
@@ -3620,11 +3643,16 @@ async function init(){
 
 function renderMaint(){
   var m=$('maint');if(!m)return;
-  var on=maintOn&&!maintBypass;
+  var on=maintOn&&(maintClosed||!maintBypass);
   m.hidden=!on;
-  if(on)$('maintMsg').textContent=maintMsg||'Het systeem is tijdelijk niet beschikbaar. Probeer het later opnieuw.';
+  if(on){
+    $('maintMsg').textContent=maintMsg||(maintClosed?'Het systeem is gesloten.':'Het systeem is tijdelijk niet beschikbaar. Probeer het later opnieuw.');
+    var h1=m.querySelector('h1');if(h1)h1.textContent=maintClosed?'Systeem gesloten':'Tijdelijk niet beschikbaar';
+    $('maintOpen').style.display=maintClosed?'none':'';if(maintClosed)$('maintForm').hidden=true;
+  }
 }
 function maintTry(){
+  if(maintClosed)return;
   var v=$('maintPw').value,h=PW_HASH.bypass;
   if(!h){$('maintErr').textContent='Er is geen toegangswachtwoord ingesteld.';return;}
   if(v&&sha256('roepnummers-zevenaar|'+v)===h){maintBypass=true;try{sessionStorage.setItem('gms-maint-bypass','1');}catch(e){}$('maintPw').value='';$('maintErr').textContent='';renderMaint();}
